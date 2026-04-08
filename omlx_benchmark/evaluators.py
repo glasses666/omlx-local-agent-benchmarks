@@ -108,7 +108,22 @@ def python_function_score(output_text: str, function_name: str, calls: list[dict
     except (SyntaxError, ValueError) as exc:
         return 0.0, {"error": str(exc), "code": code}
 
-    namespace: dict[str, Any] = {"__builtins__": {"sorted": sorted, "max": max, "min": min, "sum": sum, "range": range, "len": len, "str": str, "int": int, "float": float, "dict": dict, "list": list}}
+    namespace: dict[str, Any] = {
+        "__builtins__": {
+            "sorted": sorted,
+            "max": max,
+            "min": min,
+            "sum": sum,
+            "range": range,
+            "len": len,
+            "round": round,
+            "str": str,
+            "int": int,
+            "float": float,
+            "dict": dict,
+            "list": list,
+        }
+    }
     try:
         exec(code, namespace, namespace)
     except Exception as exc:  # pragma: no cover - runtime failures should score zero and continue
