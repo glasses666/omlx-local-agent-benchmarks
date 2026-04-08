@@ -56,6 +56,17 @@ def extract_variant(model_id: str) -> str:
     return "unknown"
 
 
+def compact_settings(profile: dict[str, Any]) -> str:
+    parts = [
+        f"temp={profile['temperature']}",
+        f"top_p={profile['top_p']}",
+        f"max_tokens={profile['max_tokens']}",
+    ]
+    if profile.get("thinking_budget") is not None:
+        parts.append(f"thinking={profile['thinking_budget']}")
+    return ", ".join(parts)
+
+
 class BenchmarkRunner:
     def __init__(
         self,
@@ -145,6 +156,27 @@ class BenchmarkRunner:
         models = self.client.models_status()
         return {"health": health, "models_status": models}
 
+    def load_profiles(self) -> dict[str, Any]:
+        return json.loads(self.profiles_file.read_text(encoding="utf-8"))
+
+    def load_summary_or_checkpoint(self, stem: str) -> dict[str, Any]:
+        summary_path = self.paths.results / f"{stem}-summary.json"
+        checkpoint_path = self.paths.results / f"{stem}-checkpoint.json"
+        if summary_path.exists():
+            return json.loads(summary_path.read_text(encoding="utf-8"))
+        if checkpoint_path.exists():
+            return json.loads(checkpoint_path.read_text(encoding="utf-8"))
+        raise FileNotFoundError(summary_path)
+
+    def load_screening_finalists(self) -> list[str]:
+        payload = self.load_summary_or_checkpoint("screening")
+        finalists = payload.get("finalists")
+        if finalists:
+            return finalists
+        summaries = payload.get("summaries", [])
+        ranked = sorted(summaries, key=lambda item: item.get("overall_score", 0.0), reverse=True)
+        return [item["model_id"] for item in ranked[:6]]
+
     def inspect_environment(self) -> dict[str, Any]:
         self.original_global_settings = self.admin.global_settings()
         status = self.client.models_status()
@@ -183,6 +215,33 @@ class BenchmarkRunner:
             result["healthy"] = False
             result["error"] = str(exc)
         return result
+
+    def candidate_tuned_profiles(self) -> list[dict[str, Any]]:
+        profiles = self.load_profiles()
+        baseline = dict(profiles["full_baseline"])
+        grid = profiles["tuned_grid"]
+        candidates = [
+            dict(baseline),
+            {**baseline, "temperature": grid["temperature"][0]},
+            {**baseline, "temperature": grid["temperature"][2]},
+            {**baseline, "top_p": grid["top_p"][-1]},
+            {**baseline, "max_tokens": grid["max_tokens"][-1]},
+            {
+                **baseline,
+                "temperature": baseline["temperature"],
+                "top_p": grid["top_p"][-1],
+                "max_tokens": grid["max_tokens"][-1],
+                "thinking_budget": grid["thinking_budget"][-1],
+            },
+        ]
+        deduped: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        for candidate in candidates:
+            key = json.dumps(candidate, sort_keys=True)
+            if key not in seen:
+                seen.add(key)
+                deduped.append(candidate)
+        return deduped
 
     def unload_all_models(self) -> dict[str, Any]:
         status = self.client.models_status()
@@ -233,9 +292,9 @@ class BenchmarkRunner:
     def model_is_vision_candidate(self, model: dict[str, Any]) -> bool:
         return model.get("model_type") == "vlm"
 
-    def vision_smoke_test(self, model_id: str, task: dict, profile: dict) -> dict[str, Any]:
-        result = self.execute_chat_task(model_id, task, profile, repeats=1)
-        success = result["median_score"] > 0
+    def vision_smoke_test(self, model_id: str, task: dict, profile: dict, mcp_ready: bool) -> dict[str, Any]:
+        result = self.execute_task(model_id, task, profile, repeats=1, mcp_ready=mcp_ready)
+        success = result.get("median_score", 0.0) > 0 and not result.get("failed")
         return {"success": success, "result": result}
 
     def _build_messages(self, task: dict) -> list[dict[str, Any]]:
@@ -270,6 +329,8 @@ class BenchmarkRunner:
                 "max_tokens": min(profile["max_tokens"], 1024),
                 "stream": False,
             }
+            if profile.get("thinking_budget") is not None:
+                payload["thinking_budget"] = profile["thinking_budget"]
             started = time.perf_counter()
             response = self.client.chat_completion(payload)
             elapsed = time.perf_counter() - started
@@ -311,6 +372,8 @@ class BenchmarkRunner:
             "tool_choice": "auto",
             "parallel_tool_calls": False,
         }
+        if profile.get("thinking_budget") is not None:
+            payload["thinking_budget"] = profile["thinking_budget"]
         started = time.perf_counter()
         response = self.client.responses(payload)
         elapsed = time.perf_counter() - started
@@ -340,7 +403,7 @@ class BenchmarkRunner:
 
     def execute_task(self, model_id: str, task: dict, profile: dict, repeats: int, mcp_ready: bool) -> dict[str, Any]:
         if task.get("live_only") and not mcp_ready:
-            return {
+            result = {
                 "task_id": task["id"],
                 "dimension": task["dimension"],
                 "mode": task["mode"],
@@ -349,9 +412,43 @@ class BenchmarkRunner:
                 "median_score": 0.0,
                 "usage": {},
             }
-        if task["mode"] == "responses":
-            return self.execute_responses_task(model_id, task, profile)
-        return self.execute_chat_task(model_id, task, profile, repeats=repeats)
+            self.log_event("task_deferred", {"model_id": model_id, "task_id": task["id"], "reason": "mcp_unhealthy"})
+            return result
+        try:
+            if task["mode"] == "responses":
+                result = self.execute_responses_task(model_id, task, profile)
+            else:
+                result = self.execute_chat_task(model_id, task, profile, repeats=repeats)
+            self.log_event(
+                "task_completed",
+                {
+                    "model_id": model_id,
+                    "task_id": task["id"],
+                    "dimension": task["dimension"],
+                    "median_score": result.get("median_score", 0.0),
+                },
+            )
+            return result
+        except Exception as exc:
+            self.log_event(
+                "task_failed",
+                {
+                    "model_id": model_id,
+                    "task_id": task["id"],
+                    "dimension": task["dimension"],
+                    "error": str(exc),
+                },
+            )
+            return {
+                "task_id": task["id"],
+                "dimension": task["dimension"],
+                "mode": task["mode"],
+                "failed": True,
+                "error": str(exc),
+                "median_score": 0.0,
+                "usage": {},
+                "runs": [],
+            }
 
     def summarize_model(self, model: dict, stage_results: list[dict], vision_capable: bool, screening_only: bool = False) -> dict[str, Any]:
         by_dimension: dict[str, list[float]] = {}
@@ -393,6 +490,43 @@ class BenchmarkRunner:
             "results": stage_results,
         }
 
+    def model_lookup(self) -> dict[str, dict[str, Any]]:
+        status = self.client.models_status()
+        return {item["id"]: item for item in status["models"]}
+
+    def run_model_suite(
+        self,
+        *,
+        model: dict[str, Any],
+        task_suites: dict[str, list[dict[str, Any]]],
+        profile: dict[str, Any],
+        mcp_state: dict[str, Any],
+        screening_only: bool,
+    ) -> dict[str, Any]:
+        self.unload_all_models()
+        self.log_event("model_start", {"model_id": model["id"], "stage": "screening" if screening_only else "full"})
+        stage_results: list[dict[str, Any]] = []
+        for task in task_suites["text"] + task_suites["code"] + task_suites["long_context"]:
+            stage_results.append(
+                self.execute_task(model["id"], task, profile, profile["repeat_count"], mcp_state["healthy"])
+            )
+
+        for task in task_suites.get("tool", []):
+            stage_results.append(self.execute_task(model["id"], task, profile, 1, mcp_state["healthy"]))
+
+        vision_capable = False
+        if self.model_is_vision_candidate(model) and task_suites.get("vision"):
+            smoke = self.vision_smoke_test(model["id"], task_suites["vision"][0], profile, mcp_state["healthy"])
+            vision_capable = smoke["success"]
+            stage_results.append(smoke["result"])
+            if vision_capable:
+                for task in task_suites["vision"][1:]:
+                    stage_results.append(self.execute_task(model["id"], task, profile, 1, mcp_state["healthy"]))
+
+        summary = self.summarize_model(model, stage_results, vision_capable, screening_only=screening_only)
+        self.unload_all_models()
+        return summary
+
     def screening_rows(self, summaries: list[dict[str, Any]]) -> list[dict[str, Any]]:
         rows = []
         for summary in summaries:
@@ -417,44 +551,60 @@ class BenchmarkRunner:
             })
         return rows
 
+    def write_screening_checkpoint(
+        self,
+        *,
+        mcp_state: dict[str, Any],
+        profile: dict[str, Any],
+        summaries: list[dict[str, Any]],
+    ) -> None:
+        write_json(
+            self.paths.results / "screening-checkpoint.json",
+            {
+                "generated_at": utc_now(),
+                "mcp_state": mcp_state,
+                "profile": profile,
+                "summaries": summaries,
+                "completed_models": [item["model_id"] for item in summaries],
+            },
+        )
+
     def run_screening(self) -> dict[str, Any]:
-        profiles = json.loads(self.profiles_file.read_text(encoding="utf-8"))
+        profiles = self.load_profiles()
         profile = profiles["screening_baseline"]
         mcp_state = self.mcp_health()
         status = self.client.models_status()
         task_suites = get_suite_tasks(self.task_file, "screening")
 
         self.apply_baseline_sampling("screening_baseline")
+        checkpoint_path = self.paths.results / "screening-checkpoint.json"
         summaries = []
+        completed_models: set[str] = set()
+        if checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            summaries = checkpoint.get("summaries", [])
+            completed_models = {item["model_id"] for item in summaries}
         finalists = []
         lightest_text = None
         best_vision = None
 
         for model in status["models"]:
-            self.unload_all_models()
-            self.log_event("model_start", {"model_id": model["id"], "stage": "screening"})
-            vision_capable = False
-            stage_results = []
-
-            for task in task_suites["text"] + task_suites["code"] + task_suites["long_context"]:
-                stage_results.append(self.execute_task(model["id"], task, profile, profile["repeat_count"], mcp_state["healthy"]))
-
-            stage_results.append(self.execute_task(model["id"], task_suites["tool"][0], profile, 1, mcp_state["healthy"]))
-
-            if self.model_is_vision_candidate(model):
-                smoke = self.vision_smoke_test(model["id"], task_suites["vision"][0], profile)
-                vision_capable = smoke["success"]
-                stage_results.append(smoke["result"])
-                stage_results.append(self.execute_task(model["id"], task_suites["vision"][1], profile, 1, mcp_state["healthy"]))
-
-            summary = self.summarize_model(model, stage_results, vision_capable, screening_only=True)
+            if model["id"] in completed_models:
+                continue
+            summary = self.run_model_suite(
+                model=model,
+                task_suites=task_suites,
+                profile=profile,
+                mcp_state=mcp_state,
+                screening_only=True,
+            )
             summaries.append(summary)
-            self.unload_all_models()
+            self.write_screening_checkpoint(mcp_state=mcp_state, profile=profile, summaries=summaries)
 
             if model["model_type"] == "llm":
                 if lightest_text is None or model["estimated_size"] < lightest_text["estimated_size"]:
                     lightest_text = model
-            if vision_capable and (best_vision is None or summary["overall_score"] > best_vision["overall_score"]):
+            if summary["type"] == "vision" and (best_vision is None or summary["overall_score"] > best_vision["overall_score"]):
                 best_vision = summary
 
         ranked = sorted(summaries, key=lambda item: item["overall_score"], reverse=True)
@@ -477,3 +627,181 @@ class BenchmarkRunner:
         report = "# Stage 1 Screening Report\n\n" + markdown_table(rows, SUMMARY_COLUMNS)
         (self.paths.reports / "screening-report.md").write_text(report, encoding="utf-8")
         return screening_payload
+
+    def write_stage_outputs(self, *, stem: str, payload: dict[str, Any], rows: list[dict[str, Any]], title: str) -> None:
+        write_json(self.paths.results / f"{stem}-summary.json", payload)
+        write_csv(self.paths.results / f"{stem}-summary.csv", rows)
+        (self.paths.reports / f"{stem}-report.md").write_text(
+            f"# {title}\n\n" + markdown_table(rows, SUMMARY_COLUMNS),
+            encoding="utf-8",
+        )
+
+    def rows_for_summaries(
+        self,
+        summaries: list[dict[str, Any]],
+        *,
+        tuned: bool = False,
+    ) -> list[dict[str, Any]]:
+        rows = []
+        for summary in summaries:
+            dim = summary["dimension_scores"]
+            rows.append({
+                "Model": summary["model_id"],
+                "Quantization / variant": summary["variant"],
+                "Type": summary["type"],
+                "Baseline speed summary": summary.get("baseline_speed", "n/a"),
+                "Tuned speed summary": summary.get("tuned_speed", "pending" if not tuned else summary.get("baseline_speed", "n/a")),
+                "Chat feel": dim.get("chat", 0.0),
+                "Instruction following": dim.get("instruction", 0.0),
+                "Code quality": dim.get("code", 0.0),
+                "Tool / agent quality": "deferred" if dim.get("tool", None) is None else dim.get("tool", 0.0),
+                "Vision quality": dim.get("vision", 0.0) if summary["type"] == "vision" else "n/a",
+                "Long-context usefulness": dim.get("long_context", 0.0),
+                "Typical strengths": summary.get("typical_strengths", "Runnable benchmark candidate"),
+                "Typical weaknesses": summary.get("typical_weaknesses", "Tool benchmark deferred" if summary.get("screening_only") else ""),
+                "Best use case": summary.get("best_use_case", "general"),
+                "Recommended oMLX settings": summary["recommended_settings"],
+                "Overall verdict": f"{summary['overall_score']:.2f}",
+            })
+        return rows
+
+    def run_full_baseline(self) -> dict[str, Any]:
+        profiles = self.load_profiles()
+        profile = profiles["full_baseline"]
+        finalists = self.load_screening_finalists()
+        task_suites = get_suite_tasks(self.task_file, "full")
+        mcp_state = self.mcp_health()
+        lookup = self.model_lookup()
+
+        self.apply_baseline_sampling("full_baseline")
+        checkpoint_path = self.paths.results / "full-baseline-checkpoint.json"
+        summaries: list[dict[str, Any]] = []
+        completed_models: set[str] = set()
+        if checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            summaries = checkpoint.get("summaries", [])
+            completed_models = {item["model_id"] for item in summaries}
+
+        for model_id in finalists:
+            if model_id in completed_models:
+                continue
+            model = lookup[model_id]
+            summary = self.run_model_suite(
+                model=model,
+                task_suites=task_suites,
+                profile=profile,
+                mcp_state=mcp_state,
+                screening_only=False,
+            )
+            summary["recommended_settings"] = compact_settings(profile)
+            summaries.append(summary)
+            write_json(
+                checkpoint_path,
+                {
+                    "generated_at": utc_now(),
+                    "profile": profile,
+                    "mcp_state": mcp_state,
+                    "summaries": summaries,
+                    "finalists": finalists,
+                },
+            )
+
+        payload = {
+            "generated_at": utc_now(),
+            "profile": profile,
+            "mcp_state": mcp_state,
+            "summaries": summaries,
+            "finalists": finalists,
+        }
+        rows = self.rows_for_summaries(summaries)
+        self.write_stage_outputs(stem="full-baseline", payload=payload, rows=rows, title="Full Baseline Report")
+        return payload
+
+    def calibration_tasks_for_model(self, task_suites: dict[str, list[dict[str, Any]]], is_vision: bool) -> dict[str, list[dict[str, Any]]]:
+        payload = {
+            "text": task_suites["text"][:2],
+            "code": task_suites["code"][:2],
+            "tool": task_suites.get("tool", [])[:1],
+            "long_context": task_suites["long_context"][:1],
+            "vision": task_suites.get("vision", [])[:1] if is_vision else [],
+        }
+        return payload
+
+    def average_dimension_score(self, summary: dict[str, Any]) -> float:
+        dims = list(summary["dimension_scores"].values())
+        return round(sum(dims) / max(len(dims), 1), 2)
+
+    def run_tuned(self) -> dict[str, Any]:
+        baseline_payload = self.load_summary_or_checkpoint("full-baseline")
+        finalists = baseline_payload["finalists"]
+        task_suites = get_suite_tasks(self.task_file, "full")
+        mcp_state = self.mcp_health()
+        lookup = self.model_lookup()
+        checkpoint_path = self.paths.results / "tuned-checkpoint.json"
+        summaries: list[dict[str, Any]] = []
+        completed_models: set[str] = set()
+        if checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            summaries = checkpoint.get("summaries", [])
+            completed_models = {item["model_id"] for item in summaries}
+
+        trials_by_model: dict[str, list[dict[str, Any]]] = {}
+        for model_id in finalists:
+            if model_id in completed_models:
+                continue
+            model = lookup[model_id]
+            calibration = self.calibration_tasks_for_model(task_suites, self.model_is_vision_candidate(model))
+            best_summary: dict[str, Any] | None = None
+            best_profile: dict[str, Any] | None = None
+            trials: list[dict[str, Any]] = []
+            for candidate in self.candidate_tuned_profiles():
+                candidate = {**candidate, "repeat_count": 1}
+                trial_summary = self.run_model_suite(
+                    model=model,
+                    task_suites=calibration,
+                    profile=candidate,
+                    mcp_state=mcp_state,
+                    screening_only=False,
+                )
+                avg = self.average_dimension_score(trial_summary)
+                trials.append({"profile": candidate, "average_score": avg, "summary": trial_summary})
+                if best_summary is None or avg > self.average_dimension_score(best_summary):
+                    best_summary = trial_summary
+                    best_profile = candidate
+
+            final_profile = {**(best_profile or self.load_profiles()["full_baseline"]), "repeat_count": self.load_profiles()["full_baseline"]["repeat_count"]}
+            final_summary = self.run_model_suite(
+                model=model,
+                task_suites=task_suites,
+                profile=final_profile,
+                mcp_state=mcp_state,
+                screening_only=False,
+            )
+            final_summary["recommended_settings"] = compact_settings(final_profile)
+            final_summary["tuned_speed"] = final_summary["baseline_speed"]
+            final_summary["typical_strengths"] = "Best calibration profile found on this machine"
+            final_summary["best_use_case"] = "tuned finalist"
+            final_summary["tuning_trials"] = [{"profile": compact_settings(item["profile"]), "average_score": item["average_score"]} for item in trials]
+            summaries.append(final_summary)
+            trials_by_model[model_id] = final_summary["tuning_trials"]
+            write_json(
+                checkpoint_path,
+                {
+                    "generated_at": utc_now(),
+                    "mcp_state": mcp_state,
+                    "summaries": summaries,
+                    "finalists": finalists,
+                    "trials_by_model": trials_by_model,
+                },
+            )
+
+        payload = {
+            "generated_at": utc_now(),
+            "mcp_state": mcp_state,
+            "summaries": summaries,
+            "finalists": finalists,
+            "trials_by_model": trials_by_model,
+        }
+        rows = self.rows_for_summaries(summaries, tuned=True)
+        self.write_stage_outputs(stem="tuned", payload=payload, rows=rows, title="Tuned Report")
+        return payload

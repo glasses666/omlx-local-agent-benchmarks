@@ -12,20 +12,24 @@ def main() -> int:
     parser.add_argument("--workspace", default=Path(__file__).resolve().parent, type=Path)
     args = parser.parse_args()
 
-    screening_path = args.workspace / "results" / "screening-summary.json"
-    if not screening_path.exists():
-        raise SystemExit("Missing screening-summary.json")
-
-    payload = json.loads(screening_path.read_text(encoding="utf-8"))
-    score_rows = []
-    for item in payload["summaries"]:
-        row = {
-            "model_id": item["model_id"],
-            "overall_score": item["overall_score"],
-            **item["dimension_scores"],
-        }
-        score_rows.append(row)
-    write_json(args.workspace / "results" / "scores.json", {"rows": score_rows})
+    outputs = {}
+    for stem in ("screening", "full-baseline", "tuned"):
+        path = args.workspace / "results" / f"{stem}-summary.json"
+        if not path.exists():
+            continue
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        score_rows = []
+        for item in payload["summaries"]:
+            row = {
+                "model_id": item["model_id"],
+                "overall_score": item["overall_score"],
+                **item["dimension_scores"],
+            }
+            score_rows.append(row)
+        outputs[stem] = score_rows
+    if not outputs:
+        raise SystemExit("No summary files found")
+    write_json(args.workspace / "results" / "scores.json", outputs)
     return 0
 
 

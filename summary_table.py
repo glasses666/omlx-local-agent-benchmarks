@@ -15,28 +15,34 @@ def main() -> int:
     screening_path = args.workspace / "results" / "screening-summary.json"
     if not screening_path.exists():
         raise SystemExit("Missing screening-summary.json")
-    payload = json.loads(screening_path.read_text(encoding="utf-8"))
+    screening = json.loads(screening_path.read_text(encoding="utf-8"))
+    tuned_path = args.workspace / "results" / "tuned-summary.json"
+    tuned_lookup = {}
+    if tuned_path.exists():
+        tuned = json.loads(tuned_path.read_text(encoding="utf-8"))
+        tuned_lookup = {item["model_id"]: item for item in tuned["summaries"]}
 
     rows = []
-    for item in payload["summaries"]:
-        dim = item["dimension_scores"]
+    for item in screening["summaries"]:
+        final = tuned_lookup.get(item["model_id"], item)
+        dim = final["dimension_scores"]
         rows.append({
-            "Model": item["model_id"],
-            "Quantization / variant": item["variant"],
-            "Type": item["type"],
-            "Baseline speed summary": item["baseline_speed"],
-            "Tuned speed summary": "pending",
+            "Model": final["model_id"],
+            "Quantization / variant": final["variant"],
+            "Type": final["type"],
+            "Baseline speed summary": item.get("baseline_speed", "n/a"),
+            "Tuned speed summary": final.get("tuned_speed", final.get("baseline_speed", "pending")),
             "Chat feel": dim.get("chat", 0.0),
             "Instruction following": dim.get("instruction", 0.0),
             "Code quality": dim.get("code", 0.0),
             "Tool / agent quality": dim.get("tool", "deferred"),
-            "Vision quality": dim.get("vision", "n/a") if item["type"] == "vision" else "n/a",
+            "Vision quality": dim.get("vision", "n/a") if final["type"] == "vision" else "n/a",
             "Long-context usefulness": dim.get("long_context", 0.0),
-            "Typical strengths": "Fast screening candidate" if item["overall_score"] >= 60 else "Needs deeper review",
-            "Typical weaknesses": "Tool benchmark deferred" if item.get("screening_only") else "",
-            "Best use case": "screening candidate",
-            "Recommended oMLX settings": item["recommended_settings"],
-            "Overall verdict": item["overall_score"],
+            "Typical strengths": final.get("typical_strengths", "Fast screening candidate" if final["overall_score"] >= 60 else "Needs deeper review"),
+            "Typical weaknesses": final.get("typical_weaknesses", "Tool benchmark deferred" if final.get("screening_only") else ""),
+            "Best use case": final.get("best_use_case", "screening candidate"),
+            "Recommended oMLX settings": final["recommended_settings"],
+            "Overall verdict": final["overall_score"],
         })
 
     write_csv(args.workspace / "results" / "summary-table.csv", rows)

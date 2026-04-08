@@ -17,6 +17,11 @@ def extract_code(text: str) -> str:
     fence = re.findall(r"```(?:python)?\n(.*?)```", text, flags=re.S)
     if fence:
         return fence[0].strip()
+    lines = text.splitlines()
+    for index, line in enumerate(lines):
+        stripped = line.lstrip()
+        if stripped.startswith(("import ", "from ", "def ", "class ", "@")):
+            return "\n".join(lines[index:]).strip()
     return text
 
 
@@ -98,10 +103,16 @@ def _validate_python_ast(code: str) -> None:
 
 def python_function_score(output_text: str, function_name: str, calls: list[dict]) -> tuple[float, dict]:
     code = extract_code(output_text)
-    _validate_python_ast(code)
+    try:
+        _validate_python_ast(code)
+    except (SyntaxError, ValueError) as exc:
+        return 0.0, {"error": str(exc), "code": code}
 
     namespace: dict[str, Any] = {"__builtins__": {"sorted": sorted, "max": max, "min": min, "sum": sum, "range": range, "len": len, "str": str, "int": int, "float": float, "dict": dict, "list": list}}
-    exec(code, namespace, namespace)
+    try:
+        exec(code, namespace, namespace)
+    except Exception as exc:  # pragma: no cover - runtime failures should score zero and continue
+        return 0.0, {"error": f"exec_failed:{exc}", "code": code}
     func = namespace.get(function_name)
     if not callable(func):
         return 0.0, {"error": f"missing_function:{function_name}"}
@@ -109,8 +120,12 @@ def python_function_score(output_text: str, function_name: str, calls: list[dict
     passed = 0
     results = []
     for item in calls:
-        actual = func(*item["args"])
-        ok = actual == item["expected"]
+        try:
+            actual = func(*item["args"])
+            ok = actual == item["expected"]
+        except Exception as exc:  # pragma: no cover - runtime failures should score zero and continue
+            actual = f"raised:{exc}"
+            ok = False
         passed += int(ok)
         results.append({"args": item["args"], "expected": item["expected"], "actual": actual, "ok": ok})
     score = 100.0 * passed / max(len(calls), 1)
