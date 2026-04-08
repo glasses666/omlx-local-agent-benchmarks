@@ -1,0 +1,387 @@
+{
+  "screening": {
+    "text": [
+      {
+        "id": "scr_text_concise_following",
+        "dimension": "instruction",
+        "mode": "chat",
+        "purpose": "Check concise instruction following and length control.",
+        "input": "Reply in exactly 12 words. Mention local models, speed, and reliability.",
+        "scoring": {"type": "word_count_contains", "word_count": 12, "must_contain": ["local", "speed", "reliability"]}
+      },
+      {
+        "id": "scr_text_json_extract",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Check structured extraction discipline.",
+        "input": "Extract this note as JSON with keys task, due_date, owner. Note: Task: refresh benchmark. Due: 2026-04-10. Owner: Draco. Return JSON only.",
+        "scoring": {"type": "json_fields", "fields": {"task": "refresh benchmark", "due_date": "2026-04-10", "owner": "Draco"}}
+      },
+      {
+        "id": "scr_text_memory",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Check multi-turn memory of earlier facts.",
+        "messages": [
+          {"role": "user", "content": "Remember this code word: ember-lane-47. Reply with OK only."},
+          {"role": "assistant", "content": "OK"},
+          {"role": "user", "content": "Now tell me the exact code word and nothing else."}
+        ],
+        "scoring": {"type": "exact_text", "expected": "ember-lane-47"}
+      }
+    ],
+    "code": [
+      {
+        "id": "scr_code_sum_even",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Measure small Python function correctness.",
+        "input": "Write only Python code for a function sum_even(nums) that returns the sum of even integers in nums.",
+        "scoring": {
+          "type": "python_function",
+          "function_name": "sum_even",
+          "calls": [
+            {"args": [[1, 2, 3, 4, 5, 6]], "expected": 12},
+            {"args": [[1, 3, 5]], "expected": 0},
+            {"args": [[-2, 7, 8]], "expected": 6}
+          ]
+        }
+      },
+      {
+        "id": "scr_code_edit_slugify",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Measure code editing on an existing function.",
+        "input": "Return only the full updated Python file. Update this function so it strips leading/trailing spaces, lowercases text, replaces internal whitespace runs with a single hyphen, and removes exclamation marks.\n\nimport re\n\ndef slugify(text: str) -> str:\n    return text.lower().replace(' ', '-')\n",
+        "scoring": {
+          "type": "python_module",
+          "function_name": "slugify",
+          "calls": [
+            {"args": ["  Hello   World! "], "expected": "hello-world"},
+            {"args": ["A  B  C"], "expected": "a-b-c"}
+          ]
+        }
+      },
+      {
+        "id": "scr_code_tests_author",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Measure test authoring quality on a small function.",
+        "input": "Given this function, write only Python unittest code that tests the edge cases thoroughly.\n\ndef clamp(value: int, lower: int, upper: int) -> int:\n    return max(lower, min(value, upper))\n",
+        "scoring": {"type": "contains_all", "must_contain": ["unittest", "clamp", "lower", "upper"]}
+      }
+    ],
+    "long_context": [
+      {
+        "id": "scr_long_retrieve",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Check retrieval of an early buried fact.",
+        "input": "Read the following context and answer with the exact archive code only.\n\nSECTION A\nArchive code: quartz-harbor-912\n\nSECTION B\n" ,
+        "context_padding": {"sentence": "Background material about benchmarks and model evaluation. ", "repeat": 600},
+        "suffix": "\n\nQUESTION\nWhat is the archive code?",
+        "scoring": {"type": "exact_text", "expected": "quartz-harbor-912"}
+      },
+      {
+        "id": "scr_long_instruction",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Check retention of an early formatting instruction.",
+        "input": "Important rule: final answer must be exactly one lowercase word.\n\n",
+        "context_padding": {"sentence": "Additional neutral benchmark notes that should be ignored. ", "repeat": 700},
+        "suffix": "\n\nQuestion: what single word should you output to confirm the rule? Output only: acknowledged",
+        "scoring": {"type": "exact_text", "expected": "acknowledged"}
+      }
+    ],
+    "tool": [
+      {
+        "id": "scr_tool_status",
+        "dimension": "tool",
+        "mode": "responses",
+        "purpose": "Check whether the model can use an MCP tool to query oMLX status.",
+        "input": "Use the available tools to tell me the current power source and the number of available local models. Keep the final answer to one short sentence.",
+        "scoring": {"type": "contains_all", "must_contain": ["models", "Power", "power"]},
+        "live_only": true
+      }
+    ],
+    "vision": [
+      {
+        "id": "scr_vision_smoke_scene",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "Minimal image understanding smoke test.",
+        "input": "Describe the main subject of this image in one short sentence.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "min_length", "minimum_chars": 12}
+      },
+      {
+        "id": "scr_vision_ui_smoke",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "Check UI screenshot understanding.",
+        "input": "What kind of application UI is this image most likely showing? Answer in one short sentence.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "min_length", "minimum_chars": 12}
+      }
+    ]
+  },
+  "full": {
+    "text": [
+      {
+        "id": "full_text_concise_following",
+        "dimension": "instruction",
+        "mode": "chat",
+        "purpose": "Strict length control.",
+        "input": "Reply in exactly 18 words about comparing local models. Mention speed, accuracy, and tuning.",
+        "scoring": {"type": "word_count_contains", "word_count": 18, "must_contain": ["speed", "accuracy", "tuning"]}
+      },
+      {
+        "id": "full_text_json_extract",
+        "dimension": "instruction",
+        "mode": "chat",
+        "purpose": "JSON discipline.",
+        "input": "Return JSON only with keys project, owner, priority, status. Project: oMLX benchmark. Owner: Draco. Priority: high. Status: active.",
+        "scoring": {"type": "json_fields", "fields": {"project": "oMLX benchmark", "owner": "Draco", "priority": "high", "status": "active"}}
+      },
+      {
+        "id": "full_text_multi_turn_memory",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Multi-turn memory.",
+        "messages": [
+          {"role": "user", "content": "Remember this identifier: atlas-runner-2048. Reply with OK only."},
+          {"role": "assistant", "content": "OK"},
+          {"role": "user", "content": "Also remember that my favorite metric is TTFT. Reply with OK only."},
+          {"role": "assistant", "content": "OK"},
+          {"role": "user", "content": "Now answer with the identifier, then a comma, then the favorite metric."}
+        ],
+        "scoring": {"type": "exact_text", "expected": "atlas-runner-2048, TTFT"}
+      },
+      {
+        "id": "full_text_style_stability",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Style stability across turns.",
+        "messages": [
+          {"role": "user", "content": "Answer all future turns in short, calm, technical sentences. Reply with OK only."},
+          {"role": "assistant", "content": "OK"},
+          {"role": "user", "content": "Explain why unload discipline matters in one sentence."},
+          {"role": "user", "content": "Now explain why reproducibility matters in one sentence."}
+        ],
+        "scoring": {"type": "min_length", "minimum_chars": 20}
+      },
+      {
+        "id": "full_text_verbosity_control",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Verbosity control.",
+        "input": "Answer this in exactly two bullet points: why benchmark both baseline and tuned profiles?",
+        "scoring": {"type": "line_count_prefix", "line_prefix": "- ", "count": 2}
+      },
+      {
+        "id": "full_text_bilingual_precision",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Chinese and English precision.",
+        "input": "Translate to Chinese but keep TTFT, tokens/sec, and baseline in English: 'We compare TTFT, tokens/sec, and baseline stability.'",
+        "scoring": {"type": "contains_all", "must_contain": ["TTFT", "tokens/sec", "baseline"]}
+      },
+      {
+        "id": "full_text_tradeoff",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Tradeoff analysis.",
+        "input": "Choose one: A faster model with weaker code quality, or a slower model with stronger code quality. Give exactly one sentence and one clear recommendation.",
+        "scoring": {"type": "contains_any", "must_contain_any": ["recommend", "choose"]}
+      },
+      {
+        "id": "full_text_instruction_persistence",
+        "dimension": "instruction",
+        "mode": "chat",
+        "purpose": "Persist an early rule through distraction.",
+        "input": "Rule: final answer must end with [done].\n\n",
+        "context_padding": {"sentence": "Distractor text about neutral benchmark details. ", "repeat": 400},
+        "suffix": "\nNow summarize why baseline settings must be fixed in one short paragraph.",
+        "scoring": {"type": "suffix", "expected_suffix": "[done]"}
+      }
+    ],
+    "code": [
+      {
+        "id": "full_code_sum_even",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Small function pass@1.",
+        "input": "Write only Python code for a function sum_even(nums) that returns the sum of even integers in nums.",
+        "scoring": {"type": "python_function", "function_name": "sum_even", "calls": [{"args": [[2, 4, 5]], "expected": 6}, {"args": [[1]], "expected": 0}]}
+      },
+      {
+        "id": "full_code_group_words",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Dictionary transformation correctness.",
+        "input": "Write only Python code for a function group_by_first_letter(words) that returns a dict mapping lowercase first letters to sorted word lists.",
+        "scoring": {"type": "python_function", "function_name": "group_by_first_letter", "calls": [{"args": [["Banana", "apple", "avocado"]], "expected": {"a": ["apple", "avocado"], "b": ["Banana"]}}]}
+      },
+      {
+        "id": "full_code_edit_slugify",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Edit an existing file without breaking behavior.",
+        "input": "Return only the full updated Python file. Update this function so it strips leading/trailing spaces, lowercases text, replaces internal whitespace runs with a single hyphen, and removes exclamation marks.\n\nimport re\n\ndef slugify(text: str) -> str:\n    return text.lower().replace(' ', '-')\n",
+        "scoring": {"type": "python_module", "function_name": "slugify", "calls": [{"args": ["  Hello   World! "], "expected": "hello-world"}, {"args": ["A  B  C"], "expected": "a-b-c"}]}
+      },
+      {
+        "id": "full_code_bugfix_discount",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Bug-fix task.",
+        "input": "Return only Python code for a fixed function apply_discount(total, percent) that keeps totals non-negative and rounds to 2 decimal places.\n\ndef apply_discount(total, percent):\n    return total - total * percent\n",
+        "scoring": {"type": "python_function", "function_name": "apply_discount", "calls": [{"args": [100, 0.25], "expected": 75.0}, {"args": [10, 2], "expected": 0.0}]}
+      },
+      {
+        "id": "full_code_tests_author",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Test authoring.",
+        "input": "Given this function, write only Python unittest code that tests normal and boundary cases.\n\ndef clamp(value: int, lower: int, upper: int) -> int:\n    return max(lower, min(value, upper))\n",
+        "scoring": {"type": "contains_all", "must_contain": ["unittest", "clamp", "assertEqual"]}
+      },
+      {
+        "id": "full_code_cli_format",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Output format discipline.",
+        "input": "Write only Python code for a function format_row(name, score) that returns exactly 'name=<name>;score=<int>'.",
+        "scoring": {"type": "python_function", "function_name": "format_row", "calls": [{"args": ["delta", 7], "expected": "name=delta;score=7"}]}
+      }
+    ],
+    "tool": [
+      {
+        "id": "full_tool_status",
+        "dimension": "tool",
+        "mode": "responses",
+        "purpose": "Use MCP status tool correctly.",
+        "input": "Use tools to report the current power source and model count in one short sentence.",
+        "scoring": {"type": "contains_any", "must_contain_any": ["Power", "power", "models"]},
+        "live_only": true
+      },
+      {
+        "id": "full_tool_web_docs",
+        "dimension": "tool",
+        "mode": "responses",
+        "purpose": "Use web search for current docs lookup.",
+        "input": "Use tools to find the Tavily Search API endpoint and answer with the path only.",
+        "scoring": {"type": "contains_any", "must_contain_any": ["/search"]},
+        "live_only": true
+      },
+      {
+        "id": "full_tool_selection",
+        "dimension": "tool",
+        "mode": "responses",
+        "purpose": "Choose the right tool instead of guessing.",
+        "input": "Without guessing, use the available tools to tell me whether the local backend is on AC power or battery power.",
+        "scoring": {"type": "contains_any", "must_contain_any": ["AC", "Battery", "power"]},
+        "live_only": true
+      },
+      {
+        "id": "full_tool_live_search_reference",
+        "dimension": "tool",
+        "mode": "responses",
+        "purpose": "Live web search reference task.",
+        "input": "Use tools to search the public web and tell me the current official Tavily Search API hostname only.",
+        "scoring": {"type": "contains_any", "must_contain_any": ["api.tavily.com"]},
+        "live_only": true,
+        "reference_only": true
+      }
+    ],
+    "long_context": [
+      {
+        "id": "full_long_retrieve_early_fact",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Retrieve an early hidden fact.",
+        "input": "Read carefully and answer with the hidden project key only.\n\nEARLY FACT\nProject key: solar-basin-448\n\n",
+        "context_padding": {"sentence": "Neutral benchmark discussion about throughput, latency, and evaluation. ", "repeat": 900},
+        "suffix": "\nQuestion: what is the project key?",
+        "scoring": {"type": "exact_text", "expected": "solar-basin-448"}
+      },
+      {
+        "id": "full_long_instruction_retention",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Retain early formatting instruction.",
+        "input": "Rule: final answer must be three comma-separated words.\n\n",
+        "context_padding": {"sentence": "More neutral content that should not override the rule. ", "repeat": 950},
+        "suffix": "\nQuestion: output exactly alpha, beta, gamma",
+        "scoring": {"type": "exact_text", "expected": "alpha, beta, gamma"}
+      },
+      {
+        "id": "full_long_cross_section",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Synthesize across distant sections.",
+        "input": "Section 1 says the main priority is latency. Section 2 says the constraint is memory. Section 3 says the goal is reproducibility.\n\n",
+        "context_padding": {"sentence": "Additional neutral paragraphs about local model benchmarking. ", "repeat": 850},
+        "suffix": "\nAnswer in one sentence naming all three: priority, constraint, and goal.",
+        "scoring": {"type": "contains_all", "must_contain": ["latency", "memory", "reproducibility"]}
+      },
+      {
+        "id": "full_long_distractor_resistance",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Ignore distractors and retrieve the target fact.",
+        "input": "Target answer: tidal-grove-63\n\n",
+        "context_padding": {"sentence": "Distractor answer candidates include river-11, ember-22, frost-33, and orbit-44. ", "repeat": 900},
+        "suffix": "\nQuestion: what is the target answer?",
+        "scoring": {"type": "exact_text", "expected": "tidal-grove-63"}
+      }
+    ],
+    "vision": [
+      {
+        "id": "full_vision_scene",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "General scene understanding.",
+        "input": "Describe the main subject of this image in one short sentence.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "min_length", "minimum_chars": 12}
+      },
+      {
+        "id": "full_vision_ui",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "UI screenshot understanding.",
+        "input": "What kind of application or interface is shown here? Answer in one short sentence.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "min_length", "minimum_chars": 12}
+      },
+      {
+        "id": "full_vision_detail",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "Detail extraction.",
+        "input": "Name two visible visual details from this image.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "contains_any", "must_contain_any": [",", " and "]}
+      },
+      {
+        "id": "full_vision_precise_qa",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "Precise image QA.",
+        "input": "Is the image more like a racing scene, a spreadsheet, or a mountain photo? Answer with one option only.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "contains_any", "must_contain_any": ["racing", "Racing"]}
+      },
+      {
+        "id": "full_vision_caption",
+        "dimension": "vision",
+        "mode": "chat",
+        "purpose": "Stable concise captioning.",
+        "input": "Write a caption of at most 12 words for this image.",
+        "image_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1815-omlx-websearch-toolcalling/silverstone_heatwave_20260405_034557.png",
+        "scoring": {"type": "max_words", "maximum_words": 12}
+      }
+    ]
+  }
+}
