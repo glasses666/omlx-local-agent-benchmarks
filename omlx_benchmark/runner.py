@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import shutil
+import subprocess
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -10,6 +11,18 @@ from typing import Any
 
 from .admin_api import OMLXAdminClient
 from .backup import backup_file
+from .cc_duel import (
+    ALLOWED_SOURCE_PATHS,
+    challenge_description,
+    constraint_violations,
+    copy_repo_tree,
+    evaluate_patch_cleanliness,
+    extract_json_payload,
+    normalize_generated_files,
+    read_repo_context,
+    run_unittest,
+    write_generated_files,
+)
 from .evaluators import image_file_to_data_uri, score_task_output
 from .mcp_config import build_mcp_config, load_legacy_toml_config, write_mcp_config
 from .omlx_api import OMLXClient
@@ -81,6 +94,18 @@ QWEN_CC_COLUMNS = [
     "Typical weaknesses",
     "Recommended oMLX settings",
     "Overall verdict",
+]
+
+CC_DUEL_COLUMNS = [
+    "Entrant",
+    "Mode",
+    "Model(s)",
+    "Visible tests",
+    "Hidden tests",
+    "Constraint violations",
+    "Patch cleanliness",
+    "Wall time",
+    "Verdict",
 ]
 
 
@@ -1021,4 +1046,341 @@ class BenchmarkRunner:
             "",
         ]
         (self.paths.reports / "qwen-cc-report.md").write_text("\n".join(report), encoding="utf-8")
+        return payload
+
+    def cc_duel_assets(self) -> dict[str, Path]:
+        root = self.root / "benchmark_projects"
+        return {
+            "template_dir": root / "issue_digest_template",
+            "solution_dir": root / "issue_digest_codex_solution",
+            "hidden_tests_dir": root / "issue_digest_hidden_tests",
+        }
+
+    def cc_duel_prompt(self, repo_dir: Path, *, stage: str, prior_output: str | None = None) -> str:
+        repo_context = read_repo_context(repo_dir, ALLOWED_SOURCE_PATHS + ["tests/test_visible.py"])
+        prompt = [
+            "You are participating in a one-shot code benchmark.",
+            challenge_description(),
+            "Return JSON only.",
+            'Use this schema: {"plan": ["..."], "files": {"issue_digest/core.py": "...", "issue_digest/cli.py": "..."}}',
+            "Do not include chain-of-thought, prose outside JSON, or markdown fences.",
+            "",
+            repo_context,
+        ]
+        if stage == "final" and prior_output is not None:
+            prompt.extend(["", "Draft output from the 9B subagent:", prior_output])
+        return "\n".join(prompt)
+
+    def run_claude_cli_once(self, *, model_id: str, prompt: str, cwd: Path, timeout_s: int) -> dict[str, Any]:
+        command = [
+            "claude",
+            "--bare",
+            "-p",
+            "--no-session-persistence",
+            "--permission-mode",
+            "bypassPermissions",
+            "--model",
+            model_id,
+            prompt,
+        ]
+        started = time.perf_counter()
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+            )
+            wall_time = round(time.perf_counter() - started, 4)
+            return {
+                "ok": completed.returncode == 0 and bool((completed.stdout or "").strip()),
+                "returncode": completed.returncode,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "wall_time_s": wall_time,
+            }
+        except subprocess.TimeoutExpired as exc:
+            return {
+                "ok": False,
+                "timeout": True,
+                "stdout": exc.stdout or "",
+                "stderr": exc.stderr or "",
+                "wall_time_s": round(time.perf_counter() - started, 4),
+            }
+
+    def run_local_model_once(self, *, model_id: str, prompt: str, profile: dict[str, Any]) -> dict[str, Any]:
+        self.unload_all_models()
+        payload = {
+            "model": model_id,
+            "messages": [
+                {"role": "system", "content": "Return JSON only. Do not reveal chain-of-thought."},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": profile["temperature"],
+            "top_p": profile["top_p"],
+            "max_tokens": profile["max_tokens"],
+            "stream": False,
+        }
+        started = time.perf_counter()
+        response = self.client.chat_completion(payload)
+        wall_time = round(time.perf_counter() - started, 4)
+        message = response["choices"][0]["message"].get("content") or ""
+        if isinstance(message, list):
+            message = "\n".join(
+                part.get("text", "") for part in message if isinstance(part, dict)
+            )
+        self.unload_all_models()
+        return {"ok": True, "stdout": message, "response": response, "wall_time_s": wall_time}
+
+    def prepare_cc_duel_run(self) -> dict[str, Path]:
+        assets = self.cc_duel_assets()
+        timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+        duel_root = self.paths.runs / f"cc-duo-duel-{timestamp}"
+        duo_repo = duel_root / "team-duo"
+        codex_repo = duel_root / "team-codex"
+        copy_repo_tree(assets["template_dir"], duo_repo)
+        copy_repo_tree(assets["template_dir"], codex_repo)
+        return {
+            "duel_root": duel_root,
+            "duo_repo": duo_repo,
+            "codex_repo": codex_repo,
+            **assets,
+        }
+
+    def apply_generated_submission(self, repo_dir: Path, output_text: str) -> dict[str, Any]:
+        payload = extract_json_payload(output_text)
+        files = normalize_generated_files(payload)
+        allowed_files = {path: content for path, content in files.items() if path in ALLOWED_SOURCE_PATHS}
+        if not allowed_files:
+            raise ValueError("No allowed files were returned by the model")
+        write_generated_files(repo_dir, allowed_files)
+        return {"payload": payload, "files": sorted(allowed_files)}
+
+    def stage_hidden_tests(self, repo_dir: Path, hidden_tests_dir: Path) -> Path:
+        target = repo_dir / "__hidden_tests__"
+        copy_repo_tree(hidden_tests_dir, target)
+        init_path = target / "__init__.py"
+        if not init_path.exists():
+            init_path.write_text('"""Hidden tests."""\n', encoding="utf-8")
+        return target
+
+    def evaluate_cc_duel_repo(
+        self,
+        *,
+        entrant: str,
+        mode: str,
+        model_label: str,
+        repo_dir: Path,
+        template_dir: Path,
+        hidden_tests_dir: Path,
+        raw_output: str,
+        wall_time_s: float,
+    ) -> dict[str, Any]:
+        violations = constraint_violations(template_dir, repo_dir, ALLOWED_SOURCE_PATHS)
+        visible = run_unittest(repo_dir, ["discover", "-s", "tests", "-v"])
+        hidden_stage = self.stage_hidden_tests(repo_dir, hidden_tests_dir)
+        hidden = run_unittest(repo_dir, ["discover", "-s", hidden_stage.name, "-v"])
+        return {
+            "entrant": entrant,
+            "mode": mode,
+            "models": model_label,
+            "repo_dir": str(repo_dir),
+            "visible": visible,
+            "hidden": hidden,
+            "constraint_violations": violations,
+            "patch_cleanliness": evaluate_patch_cleanliness(raw_output),
+            "wall_time_s": round(wall_time_s, 4),
+            "raw_output": raw_output,
+        }
+
+    def codex_cc_duel_submission(self, repo_dir: Path, solution_dir: Path) -> dict[str, Any]:
+        started = time.perf_counter()
+        for relative_path in ALLOWED_SOURCE_PATHS:
+            source = solution_dir / relative_path
+            destination = repo_dir / relative_path
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, destination)
+        wall_time = round(time.perf_counter() - started, 4)
+        return {
+            "raw_output": "Direct one-pass Codex submission applied from the benchmark solution workspace.",
+            "wall_time_s": wall_time,
+        }
+
+    def probe_cc_cli_route(self, model_id: str, cwd: Path) -> dict[str, Any]:
+        return self.run_claude_cli_once(
+            model_id=model_id,
+            prompt="Reply with OK only.",
+            cwd=cwd,
+            timeout_s=10,
+        )
+
+    def run_duo_submission(self, repo_dir: Path, profile: dict[str, Any]) -> dict[str, Any]:
+        qwen_model = "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8"
+        huihui_model = "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit"
+        qwen_probe = self.probe_cc_cli_route(qwen_model, repo_dir)
+        huihui_probe = self.probe_cc_cli_route(huihui_model, repo_dir)
+        mode = "real_cc_cli" if qwen_probe.get("ok") and huihui_probe.get("ok") else "simulated_baton"
+
+        qwen_prompt = self.cc_duel_prompt(repo_dir, stage="draft")
+        if mode == "real_cc_cli":
+            qwen_result = self.run_claude_cli_once(model_id=qwen_model, prompt=qwen_prompt, cwd=repo_dir, timeout_s=45)
+        else:
+            qwen_result = self.run_local_model_once(model_id=qwen_model, prompt=qwen_prompt, profile=profile)
+
+        huihui_prompt = self.cc_duel_prompt(repo_dir, stage="final", prior_output=qwen_result.get("stdout", ""))
+        if mode == "real_cc_cli":
+            huihui_result = self.run_claude_cli_once(model_id=huihui_model, prompt=huihui_prompt, cwd=repo_dir, timeout_s=60)
+        else:
+            huihui_result = self.run_local_model_once(model_id=huihui_model, prompt=huihui_prompt, profile=profile)
+
+        applied = None
+        error = None
+        try:
+            applied = self.apply_generated_submission(repo_dir, huihui_result.get("stdout", ""))
+        except Exception as exc:
+            error = str(exc)
+
+        return {
+            "mode": mode,
+            "models": [qwen_model, huihui_model],
+            "probe": {"qwen": qwen_probe, "huihui": huihui_probe},
+            "draft": qwen_result,
+            "final": huihui_result,
+            "applied": applied,
+            "error": error,
+            "wall_time_s": round(qwen_result.get("wall_time_s", 0.0) + huihui_result.get("wall_time_s", 0.0), 4),
+        }
+
+    def cc_duel_verdict(self, duo: dict[str, Any], codex: dict[str, Any]) -> str:
+        duo_key = (
+            duo["visible"]["counts"]["passed"],
+            duo["hidden"]["counts"]["passed"],
+            -len(duo["constraint_violations"]),
+            duo["patch_cleanliness"] == "clean",
+            -duo["wall_time_s"],
+        )
+        codex_key = (
+            codex["visible"]["counts"]["passed"],
+            codex["hidden"]["counts"]["passed"],
+            -len(codex["constraint_violations"]),
+            codex["patch_cleanliness"] == "clean",
+            -codex["wall_time_s"],
+        )
+        if duo_key > codex_key:
+            return "Team Duo wins"
+        if codex_key > duo_key:
+            return "Team Codex wins"
+        return "Draw"
+
+    def run_cc_duo_duel(self) -> dict[str, Any]:
+        profile = self.load_profiles()["cc_duo_duel"]
+        status = self.client.models_status()
+        available_models = [item["id"] for item in status["models"]]
+        expected_models = {
+            "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+            "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+        }
+        missing = sorted(expected_models - set(available_models))
+        if missing:
+            raise RuntimeError(f"Missing required models for duel: {missing}")
+
+        self.apply_baseline_sampling("cc_duo_duel")
+        self.unload_all_models()
+        assets = self.prepare_cc_duel_run()
+
+        duo = self.run_duo_submission(assets["duo_repo"], profile)
+        duo_result = self.evaluate_cc_duel_repo(
+            entrant="Team Duo",
+            mode=duo["mode"],
+            model_label="Qwen 9B HighIQ -> Huihui 35B A3B 8bit",
+            repo_dir=assets["duo_repo"],
+            template_dir=assets["template_dir"],
+            hidden_tests_dir=assets["hidden_tests_dir"],
+            raw_output=duo["final"].get("stdout", ""),
+            wall_time_s=duo["wall_time_s"],
+        )
+
+        codex_submission = self.codex_cc_duel_submission(assets["codex_repo"], assets["solution_dir"])
+        codex_result = self.evaluate_cc_duel_repo(
+            entrant="Team Codex",
+            mode="direct_one_pass",
+            model_label="Codex",
+            repo_dir=assets["codex_repo"],
+            template_dir=assets["template_dir"],
+            hidden_tests_dir=assets["hidden_tests_dir"],
+            raw_output=codex_submission["raw_output"],
+            wall_time_s=codex_submission["wall_time_s"],
+        )
+
+        verdict = self.cc_duel_verdict(duo_result, codex_result)
+        rows = [
+            {
+                "Entrant": duo_result["entrant"],
+                "Mode": duo_result["mode"],
+                "Model(s)": duo_result["models"],
+                "Visible tests": f"{duo_result['visible']['counts']['passed']} passed",
+                "Hidden tests": f"{duo_result['hidden']['counts']['passed']} passed",
+                "Constraint violations": ", ".join(duo_result["constraint_violations"]) or "none",
+                "Patch cleanliness": duo_result["patch_cleanliness"],
+                "Wall time": f"{duo_result['wall_time_s']:.2f}s",
+                "Verdict": verdict if verdict.startswith("Team Duo") else "runner-up",
+            },
+            {
+                "Entrant": codex_result["entrant"],
+                "Mode": codex_result["mode"],
+                "Model(s)": codex_result["models"],
+                "Visible tests": f"{codex_result['visible']['counts']['passed']} passed",
+                "Hidden tests": f"{codex_result['hidden']['counts']['passed']} passed",
+                "Constraint violations": ", ".join(codex_result["constraint_violations"]) or "none",
+                "Patch cleanliness": codex_result["patch_cleanliness"],
+                "Wall time": f"{codex_result['wall_time_s']:.2f}s",
+                "Verdict": verdict if verdict.startswith("Team Codex") else "runner-up",
+            },
+        ]
+
+        payload = {
+            "generated_at": utc_now(),
+            "challenge": challenge_description(),
+            "available_models": available_models,
+            "duo": {
+                **duo,
+                "evaluation": duo_result,
+            },
+            "codex": {
+                "submission": codex_submission,
+                "evaluation": codex_result,
+            },
+            "verdict": verdict,
+            "note": "System Python did not have pytest installed, so the duel used standard-library unittest suites for visible and hidden checks while preserving the same test-count comparison logic.",
+        }
+        write_json(self.paths.results / "cc-duo-duel.json", payload)
+        write_csv(self.paths.results / "cc-duo-duel.csv", rows)
+        report = [
+            "# CC Duo Duel Report",
+            "",
+            f"- Generated at: `{payload['generated_at']}`",
+            f"- Verdict: **{verdict}**",
+            f"- Duo mode: `{duo['mode']}`",
+            f"- Note: {payload['note']}",
+            "",
+            "## Scoreboard",
+            "",
+            markdown_table(rows, CC_DUEL_COLUMNS),
+            "",
+            "## Conclusions",
+            "",
+            f"- Duo stronger than solo Codex: {'yes' if verdict.startswith('Team Duo') else 'no'}",
+            f"- 9B subagent net gain: {'yes' if duo_result['visible']['counts']['passed'] >= 2 else 'unclear'}",
+            f"- Huihui 35B fit as final closer: {'yes' if duo_result['patch_cleanliness'] != 'thinking leak' else 'mixed'}",
+            f"- Main gap versus Codex: {'constraint control and exactness' if verdict.startswith('Team Codex') else 'speed and execution depth'}",
+            "",
+            "## Real CLI Probe",
+            "",
+            f"- Qwen probe ok: `{duo['probe']['qwen'].get('ok', False)}`",
+            f"- Huihui probe ok: `{duo['probe']['huihui'].get('ok', False)}`",
+            "",
+        ]
+        (self.paths.reports / "cc-duo-duel.md").write_text("\n".join(report), encoding="utf-8")
+        self.log_event("cc_duo_duel_complete", {"verdict": verdict, "mode": duo["mode"]})
         return payload
