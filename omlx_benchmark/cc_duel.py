@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -110,7 +111,7 @@ def changed_paths(template_dir: Path, repo_dir: Path) -> list[str]:
         if not source.is_file():
             continue
         relative = source.relative_to(template_dir).as_posix()
-        if relative.startswith(IGNORE_DIFF_PREFIXES):
+        if relative.startswith(IGNORE_DIFF_PREFIXES) or "/__pycache__/" in relative or relative.endswith(".pyc"):
             continue
         candidate = repo_dir / relative
         if not candidate.exists():
@@ -122,7 +123,7 @@ def changed_paths(template_dir: Path, repo_dir: Path) -> list[str]:
         if not candidate.is_file():
             continue
         relative = candidate.relative_to(repo_dir).as_posix()
-        if relative.startswith(IGNORE_DIFF_PREFIXES):
+        if relative.startswith(IGNORE_DIFF_PREFIXES) or "/__pycache__/" in relative or relative.endswith(".pyc"):
             continue
         if not (template_dir / relative).exists():
             paths.add(relative)
@@ -180,11 +181,14 @@ def parse_test_counts(output: str) -> dict[str, int]:
 
 
 def run_unittest(repo_dir: Path, args: list[str]) -> dict[str, Any]:
+    env = dict(os.environ)
+    env["PYTHONDONTWRITEBYTECODE"] = "1"
     completed = subprocess.run(
         ["python3", "-m", "unittest", *args],
         cwd=repo_dir,
         capture_output=True,
         text=True,
+        env=env,
     )
     combined = (completed.stdout or "") + (completed.stderr or "")
     return {

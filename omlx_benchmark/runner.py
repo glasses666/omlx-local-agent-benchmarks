@@ -267,6 +267,25 @@ class BenchmarkRunner:
             result["error"] = str(exc)
         return result
 
+    def retry_backend_call(
+        self,
+        operation,
+        *,
+        attempts: int = 5,
+        delay_s: float = 2.0,
+    ) -> Any:
+        last_error: Exception | None = None
+        for attempt in range(attempts):
+            try:
+                return operation()
+            except Exception as exc:
+                last_error = exc
+                if attempt == attempts - 1:
+                    raise
+                time.sleep(delay_s)
+        assert last_error is not None
+        raise last_error
+
     def candidate_tuned_profiles(self) -> list[dict[str, Any]]:
         profiles = self.load_profiles()
         baseline = dict(profiles["full_baseline"])
@@ -295,15 +314,15 @@ class BenchmarkRunner:
         return deduped
 
     def unload_all_models(self) -> dict[str, Any]:
-        status = self.client.models_status()
+        status = self.retry_backend_call(self.client.models_status)
         unloaded: list[str] = []
         for model in status["models"]:
             if model.get("loaded"):
-                self.client.unload_model(model["id"])
+                self.retry_backend_call(lambda model_id=model["id"]: self.client.unload_model(model_id))
                 unloaded.append(model["id"])
         deadline = time.time() + 120
         while time.time() < deadline:
-            current = self.client.models_status()
+            current = self.retry_backend_call(self.client.models_status)
             if current.get("loaded_count", 0) == 0:
                 self.log_event("models_unloaded", {"models": unloaded})
                 return current
@@ -320,7 +339,7 @@ class BenchmarkRunner:
             "sampling_repetition_penalty": profile["repetition_penalty"],
             "sampling_max_tokens": profile["max_tokens"],
         }
-        result = self.admin.update_global_settings(payload)
+        result = self.retry_backend_call(lambda: self.admin.update_global_settings(payload))
         self.log_event("baseline_sampling_applied", {"profile": profile_name, "payload": payload})
         return result
 
@@ -336,7 +355,7 @@ class BenchmarkRunner:
             "sampling_top_k": sampling["top_k"],
             "sampling_repetition_penalty": sampling["repetition_penalty"],
         }
-        result = self.admin.update_global_settings(payload)
+        result = self.retry_backend_call(lambda: self.admin.update_global_settings(payload))
         self.log_event("global_sampling_restored", {"payload": payload})
         return result
 
@@ -345,6 +364,12 @@ class BenchmarkRunner:
 
     def claude_code_cli_path(self) -> str | None:
         return shutil.which("claude")
+
+    def openclaude_cli_path(self) -> str | None:
+        local = self.root / "third_party" / "openclaude-runtime" / "node_modules" / ".bin" / "openclaude"
+        if local.exists():
+            return str(local)
+        return shutil.which("openclaude")
 
     def aider_cli_path(self) -> str | None:
         return shutil.which("aider")
@@ -1068,19 +1093,75 @@ class BenchmarkRunner:
             "hidden_tests_dir": root / "issue_digest_hidden_tests",
         }
 
+    def cc_duel_system_prompt(self, stage: str) -> str:
+        common = [
+            "You are operating as a disciplined coding agent in a one-shot benchmark.",
+            "Behavior goals: be exact, constraint-aware, minimal, and test-oriented.",
+            "Never reveal chain-of-thought or hidden reasoning. Give only concise execution updates when you finish.",
+            "Only modify issue_digest/core.py and issue_digest/cli.py.",
+            "Do not modify tests, project structure, dependencies, or CLI module names.",
+            "Read the visible tests before editing code and treat them as executable requirements, not suggestions.",
+        ]
+        if stage == "draft":
+            common.extend(
+                [
+                    "You are the fast drafter.",
+                    "Do not edit files in this stage.",
+                    "Your job is to scout the repo quickly, extract the exact constraints, and hand off the smallest high-signal plan possible.",
+                    "Do not waste tokens on essays or speculative redesigns.",
+                    "Finish with a very short handoff summary: likely edits, risky edge cases, and one recommended next check.",
+                ]
+            )
+        else:
+            common.extend(
+                [
+                    "You are the final closer.",
+                    "Assume a smaller subagent already made a draft and may have introduced subtle mistakes.",
+                    "Review the changed files carefully, correct anything inconsistent with the tests or challenge, and keep the final diff tight.",
+                    "Before finishing, run the visible test suite once with `python3 -m unittest discover -s tests -v` and fix any failures you can within this same session.",
+                    "Finish with a terse completion summary only.",
+                ]
+            )
+        return "\n".join(common)
+
     def cc_duel_prompt(self, repo_dir: Path, *, stage: str, prior_output: str | None = None) -> str:
         repo_context = read_repo_context(repo_dir, ALLOWED_SOURCE_PATHS + ["tests/test_visible.py"])
-        prompt = [
-            "You are participating in a one-shot code benchmark.",
-            challenge_description(),
-            "Return JSON only.",
-            'Use this schema: {"plan": ["..."], "files": {"issue_digest/core.py": "...", "issue_digest/cli.py": "..."}}',
-            "Do not include chain-of-thought, prose outside JSON, or markdown fences.",
-            "",
-            repo_context,
-        ]
+        prompt = []
+        if stage == "draft":
+            prompt.extend(
+                [
+                    "You are the fast scout engineer.",
+                    "Do not try to be complete prose. Make the repo better immediately.",
+                    "In this stage, do not edit files. Read and hand off only.",
+                ]
+            )
+        else:
+            prompt.extend(
+                [
+                    "You are the final closer engineer.",
+                    "Treat the 9B draft as untrusted input.",
+                    "If the draft conflicts with the repo or constraints, ignore it.",
+                ]
+            )
+        prompt.extend(
+            [
+                "",
+                "Challenge:",
+                challenge_description(),
+                "",
+                "Required workflow:",
+                "1. Read tests/test_visible.py first.",
+                "2. Read the allowed source files.",
+                "3. Edit only the allowed source files." if stage != "draft" else "3. Do not edit files in this stage.",
+                "4. Keep default behavior compatible unless the challenge explicitly changes it.",
+                "5. sort by priority descending then title ascending.",
+            ]
+        )
+        if stage == "final":
+            prompt.append("6. Run the visible tests once before you finish.")
+        prompt.extend(["", "Current repo context:", repo_context])
         if stage == "final" and prior_output is not None:
-            prompt.extend(["", "Draft output from the 9B subagent:", prior_output])
+            prompt.extend(["", "Draft handoff from the 9B subagent:", prior_output])
         return "\n".join(prompt)
 
     def run_claude_cli_once(self, *, model_id: str, prompt: str, cwd: Path, timeout_s: int) -> dict[str, Any]:
@@ -1111,6 +1192,79 @@ class BenchmarkRunner:
                 "stdout": completed.stdout,
                 "stderr": completed.stderr,
                 "wall_time_s": wall_time,
+            }
+        except subprocess.TimeoutExpired as exc:
+            return {
+                "ok": False,
+                "timeout": True,
+                "stdout": coerce_text(exc.stdout),
+                "stderr": coerce_text(exc.stderr),
+                "wall_time_s": round(time.perf_counter() - started, 4),
+            }
+
+    def run_openclaude_once(
+        self,
+        *,
+        model_id: str,
+        prompt: str,
+        system_prompt: str,
+        cwd: Path,
+        timeout_s: int,
+        tools: str,
+        home_dir: Path,
+    ) -> dict[str, Any]:
+        home_dir.mkdir(parents=True, exist_ok=True)
+        command = [
+            self.openclaude_cli_path() or "openclaude",
+            "--provider",
+            "openai",
+            "--model",
+            model_id,
+            "--bare",
+            "--print",
+            "--output-format",
+            "json",
+            "--no-session-persistence",
+            "--permission-mode",
+            "bypassPermissions",
+            "--dangerously-skip-permissions",
+            "--tools",
+            tools,
+            "--append-system-prompt",
+            system_prompt,
+            prompt,
+        ]
+        env = dict(os.environ)
+        env["HOME"] = str(home_dir)
+        env["CLAUDE_CODE_USE_OPENAI"] = "1"
+        env["OPENAI_API_KEY"] = self.client.api_key
+        env["OPENAI_BASE_URL"] = "http://127.0.0.1:8000/v1"
+        started = time.perf_counter()
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                env=env,
+            )
+            wall_time = round(time.perf_counter() - started, 4)
+            parsed = None
+            result_text = completed.stdout
+            if completed.stdout.strip():
+                try:
+                    parsed = json.loads(completed.stdout)
+                    result_text = parsed.get("result", completed.stdout)
+                except json.JSONDecodeError:
+                    parsed = None
+            return {
+                "ok": completed.returncode == 0,
+                "returncode": completed.returncode,
+                "stdout": result_text,
+                "stderr": completed.stderr,
+                "wall_time_s": wall_time,
+                "response": parsed,
             }
         except subprocess.TimeoutExpired as exc:
             return {
@@ -1298,44 +1452,43 @@ class BenchmarkRunner:
             timeout_s=10,
         )
 
-    def probe_aider_route(self, model_id: str, cwd: Path, home_dir: Path) -> dict[str, Any]:
-        return self.run_aider_once(
+    def probe_openclaude_route(self, model_id: str, cwd: Path, home_dir: Path) -> dict[str, Any]:
+        return self.run_openclaude_once(
             model_id=model_id,
             prompt="Reply with OK only.",
+            system_prompt="Reply with OK only. Do not use tools.",
             cwd=cwd,
-            editable_files=[],
-            read_only_files=[],
-            home_dir=home_dir,
+            home_dir=home_dir / "probe",
             timeout_s=30,
+            tools="",
         )
 
     def run_duo_submission(self, repo_dir: Path, profile: dict[str, Any]) -> dict[str, Any]:
         qwen_model = "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8"
         huihui_model = "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit"
-        editable_files = ["issue_digest/core.py", "issue_digest/cli.py"]
-        read_only_files = ["tests/test_visible.py"]
-        aider_home = self.paths.artifacts / "aider-home"
-        qwen_aider_probe = self.probe_aider_route(qwen_model, repo_dir, aider_home / "qwen-probe")
-        huihui_aider_probe = self.probe_aider_route(huihui_model, repo_dir, aider_home / "huihui-probe")
+        agent_home = self.paths.artifacts / "openclaude-home"
+        qwen_openclaude_probe = self.probe_openclaude_route(qwen_model, repo_dir, agent_home / "qwen")
+        huihui_openclaude_probe = self.probe_openclaude_route(huihui_model, repo_dir, agent_home / "huihui")
         qwen_probe = self.probe_cc_cli_route(qwen_model, repo_dir)
         huihui_probe = self.probe_cc_cli_route(huihui_model, repo_dir)
-        if self.aider_cli_path():
-            mode = "oss_aider_baton"
+        if self.openclaude_cli_path():
+            mode = "oss_openclaude_baton"
         elif qwen_probe.get("ok") and huihui_probe.get("ok"):
             mode = "real_cc_cli"
         else:
             mode = "simulated_baton"
 
         qwen_prompt = self.cc_duel_prompt(repo_dir, stage="draft")
-        if mode == "oss_aider_baton":
-            qwen_result = self.run_aider_once(
+        qwen_system_prompt = self.cc_duel_system_prompt("draft")
+        if mode == "oss_openclaude_baton":
+            qwen_result = self.run_openclaude_once(
                 model_id=qwen_model,
                 prompt=qwen_prompt,
+                system_prompt=qwen_system_prompt,
                 cwd=repo_dir,
-                editable_files=editable_files,
-                read_only_files=read_only_files,
-                home_dir=aider_home / "qwen-run",
-                timeout_s=90,
+                home_dir=agent_home / "qwen-run",
+                timeout_s=45,
+                tools="Read,Grep,Glob",
             )
         elif mode == "real_cc_cli":
             qwen_result = self.run_claude_cli_once(model_id=qwen_model, prompt=qwen_prompt, cwd=repo_dir, timeout_s=45)
@@ -1343,15 +1496,16 @@ class BenchmarkRunner:
             qwen_result = self.run_local_model_once(model_id=qwen_model, prompt=qwen_prompt, profile=profile)
 
         huihui_prompt = self.cc_duel_prompt(repo_dir, stage="final", prior_output=qwen_result.get("stdout", ""))
-        if mode == "oss_aider_baton":
-            huihui_result = self.run_aider_once(
+        huihui_system_prompt = self.cc_duel_system_prompt("final")
+        if mode == "oss_openclaude_baton":
+            huihui_result = self.run_openclaude_once(
                 model_id=huihui_model,
                 prompt=huihui_prompt,
+                system_prompt=huihui_system_prompt,
                 cwd=repo_dir,
-                editable_files=editable_files,
-                read_only_files=read_only_files,
-                home_dir=aider_home / "huihui-run",
-                timeout_s=120,
+                home_dir=agent_home / "huihui-run",
+                timeout_s=150,
+                tools="Read,Edit,Write,Grep,Glob,Bash",
             )
         elif mode == "real_cc_cli":
             huihui_result = self.run_claude_cli_once(model_id=huihui_model, prompt=huihui_prompt, cwd=repo_dir, timeout_s=60)
@@ -1366,16 +1520,20 @@ class BenchmarkRunner:
             except Exception as exc:
                 error = str(exc)
         else:
-            applied = {"files": editable_files}
+            applied = {"files": ["issue_digest/core.py", "issue_digest/cli.py"]}
 
         return {
             "mode": mode,
             "models": [qwen_model, huihui_model],
+            "system_prompts": {
+                "qwen": qwen_system_prompt,
+                "huihui": huihui_system_prompt,
+            },
             "probe": {
                 "qwen": qwen_probe,
                 "huihui": huihui_probe,
-                "qwen_aider": qwen_aider_probe,
-                "huihui_aider": huihui_aider_probe,
+                "qwen_openclaude": qwen_openclaude_probe,
+                "huihui_openclaude": huihui_openclaude_probe,
             },
             "draft": qwen_result,
             "final": huihui_result,
@@ -1509,10 +1667,22 @@ class BenchmarkRunner:
             "",
             "## Real CLI Probe",
             "",
-            f"- Aider Qwen probe ok: `{duo['probe'].get('qwen_aider', {}).get('ok', False)}`",
-            f"- Aider Huihui probe ok: `{duo['probe'].get('huihui_aider', {}).get('ok', False)}`",
+            f"- OpenClaude Qwen probe ok: `{duo['probe'].get('qwen_openclaude', {}).get('ok', False)}`",
+            f"- OpenClaude Huihui probe ok: `{duo['probe'].get('huihui_openclaude', {}).get('ok', False)}`",
             f"- Qwen probe ok: `{duo['probe']['qwen'].get('ok', False)}`",
             f"- Huihui probe ok: `{duo['probe']['huihui'].get('ok', False)}`",
+            "",
+            "## Prompt Profile",
+            "",
+            "The duo now uses stage-specific appended system prompts tuned for disciplined code-agent behavior:",
+            "",
+            "### Qwen 9B Draft Prompt",
+            "",
+            duo["system_prompts"]["qwen"],
+            "",
+            "### Huihui 35B Final Prompt",
+            "",
+            duo["system_prompts"]["huihui"],
             "",
         ]
         (self.paths.reports / "cc-duo-duel.md").write_text("\n".join(report), encoding="utf-8")
