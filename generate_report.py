@@ -24,6 +24,7 @@ def main() -> int:
         ("screening", "Screening"),
         ("full-baseline", "Full Baseline"),
         ("tuned", "Tuned"),
+        ("qwen-cc", "Qwen Claude-Code-Style"),
     ):
         summary_path = args.workspace / "results" / f"{stem}-summary.json"
         csv_path = args.workspace / "results" / f"{stem}-summary.csv"

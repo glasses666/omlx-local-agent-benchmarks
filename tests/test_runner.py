@@ -62,3 +62,78 @@ class RunnerTests(unittest.TestCase):
             self.assertTrue(runtime_path.exists())
             payload = json.loads(runtime_path.read_text(encoding="utf-8"))
             self.assertIn("mcpServers", payload)
+
+    def test_qwen_series_classification(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            runner = BenchmarkRunner(
+                root,
+                settings_path=root / "settings.json",
+                model_settings_path=root / "model_settings.json",
+                app_config_path=root / "config.json",
+                fallback_mcp_path=root / "mcp.toml",
+            )
+            self.assertEqual(
+                runner.qwen_series("Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-4bit"),
+                "huihui",
+            )
+            self.assertEqual(
+                runner.qwen_series("MLX-Qwen3.5-35B-A3B-Claude-4.6-Opus-Reasoning-Distilled-8bit"),
+                "qwen_opus",
+            )
+            self.assertEqual(runner.qwen_series("Qwen3.5-9B-MLX-4bit"), "other_qwen")
+
+    def test_qwen_cc_overall_score_prefers_code_heavily(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            runner = BenchmarkRunner(
+                root,
+                settings_path=root / "settings.json",
+                model_settings_path=root / "model_settings.json",
+                app_config_path=root / "config.json",
+                fallback_mcp_path=root / "mcp.toml",
+            )
+            score = runner.qwen_cc_overall_score(
+                {
+                    "code": 100.0,
+                    "instruction": 50.0,
+                    "chat": 0.0,
+                    "long_context": 100.0,
+                }
+            )
+            self.assertEqual(score, 75.0)
+
+    def test_summarize_qwen_series_returns_best_model(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            runner = BenchmarkRunner(
+                root,
+                settings_path=root / "settings.json",
+                model_settings_path=root / "model_settings.json",
+                app_config_path=root / "config.json",
+                fallback_mcp_path=root / "mcp.toml",
+            )
+            payload = runner.summarize_qwen_series(
+                [
+                    {
+                        "model_id": "Huihui-A",
+                        "series": "huihui",
+                        "overall_score": 61.0,
+                        "dimension_scores": {"code": 70.0, "instruction": 40.0},
+                    },
+                    {
+                        "model_id": "Huihui-B",
+                        "series": "huihui",
+                        "overall_score": 73.0,
+                        "dimension_scores": {"code": 90.0, "instruction": 60.0},
+                    },
+                    {
+                        "model_id": "Opus-A",
+                        "series": "qwen_opus",
+                        "overall_score": 55.0,
+                        "dimension_scores": {"code": 50.0, "instruction": 50.0},
+                    },
+                ]
+            )
+            self.assertEqual(payload["huihui"]["best_model"], "Huihui-B")
+            self.assertEqual(payload["huihui"]["average_code"], 80.0)

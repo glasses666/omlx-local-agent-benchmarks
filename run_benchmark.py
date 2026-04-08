@@ -10,7 +10,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run oMLX local model benchmarks.")
     parser.add_argument(
         "command",
-        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "all"],
+        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "qwen-cc", "all"],
         help="Benchmark action to run.",
     )
     parser.add_argument(
@@ -58,6 +58,13 @@ def main() -> int:
         finally:
             runner.restore_global_sampling()
         return 0
+    if args.command == "qwen-cc":
+        runner.inspect_environment()
+        try:
+            runner.run_qwen_cc()
+        finally:
+            runner.restore_global_sampling()
+        return 0
     if args.command == "all":
         runner.inspect_environment()
         runner.backup_relevant_files()
@@ -65,6 +72,7 @@ def main() -> int:
             runner.run_screening()
             runner.run_full_baseline()
             runner.run_tuned()
+            runner.run_qwen_cc()
         finally:
             runner.restore_global_sampling()
         return 0

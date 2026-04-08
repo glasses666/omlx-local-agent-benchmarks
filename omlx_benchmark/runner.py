@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import shutil
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -65,6 +66,22 @@ def compact_settings(profile: dict[str, Any]) -> str:
     if profile.get("thinking_budget") is not None:
         parts.append(f"thinking={profile['thinking_budget']}")
     return ", ".join(parts)
+
+
+QWEN_CC_COLUMNS = [
+    "Model",
+    "Series",
+    "Quantization / variant",
+    "CC-style speed summary",
+    "Chat feel",
+    "Instruction following",
+    "Code quality",
+    "Long-context usefulness",
+    "Typical strengths",
+    "Typical weaknesses",
+    "Recommended oMLX settings",
+    "Overall verdict",
+]
 
 
 class BenchmarkRunner:
@@ -291,6 +308,33 @@ class BenchmarkRunner:
 
     def model_is_vision_candidate(self, model: dict[str, Any]) -> bool:
         return model.get("model_type") == "vlm"
+
+    def claude_code_cli_path(self) -> str | None:
+        return shutil.which("claude")
+
+    def is_qwen_family_model(self, model: dict[str, Any]) -> bool:
+        model_id = model["id"].lower()
+        return "qwen" in model_id or "huihui" in model_id
+
+    def qwen_series(self, model_id: str) -> str:
+        lowered = model_id.lower()
+        if lowered.startswith("huihui-"):
+            return "huihui"
+        if "claude-4.6-opus" in lowered:
+            return "qwen_opus"
+        return "other_qwen"
+
+    def qwen_cc_overall_score(self, dimension_scores: dict[str, float]) -> float:
+        weights = {
+            "code": 0.5,
+            "instruction": 0.2,
+            "chat": 0.15,
+            "long_context": 0.15,
+        }
+        total = 0.0
+        for key, weight in weights.items():
+            total += dimension_scores.get(key, 0.0) * weight
+        return round(total, 2)
 
     def vision_smoke_test(self, model_id: str, task: dict, profile: dict, mcp_ready: bool) -> dict[str, Any]:
         result = self.execute_task(model_id, task, profile, repeats=1, mcp_ready=mcp_ready)
@@ -665,6 +709,71 @@ class BenchmarkRunner:
             })
         return rows
 
+    def qwen_cc_rows(self, summaries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        rows = []
+        for summary in summaries:
+            dim = summary["dimension_scores"]
+            rows.append({
+                "Model": summary["model_id"],
+                "Series": summary["series"],
+                "Quantization / variant": summary["variant"],
+                "CC-style speed summary": summary.get("baseline_speed", "n/a"),
+                "Chat feel": dim.get("chat", 0.0),
+                "Instruction following": dim.get("instruction", 0.0),
+                "Code quality": dim.get("code", 0.0),
+                "Long-context usefulness": dim.get("long_context", 0.0),
+                "Typical strengths": summary.get("typical_strengths", "CC-style code candidate"),
+                "Typical weaknesses": summary.get("typical_weaknesses", ""),
+                "Recommended oMLX settings": summary["recommended_settings"],
+                "Overall verdict": f"{summary['overall_score']:.2f}",
+            })
+        return rows
+
+    def summarize_qwen_series(self, summaries: list[dict[str, Any]]) -> dict[str, Any]:
+        by_series: dict[str, list[dict[str, Any]]] = {}
+        for summary in summaries:
+            by_series.setdefault(summary["series"], []).append(summary)
+        payload: dict[str, Any] = {}
+        for series, items in by_series.items():
+            ranked = sorted(items, key=lambda item: item["overall_score"], reverse=True)
+            avg_overall = round(sum(item["overall_score"] for item in items) / len(items), 2)
+            avg_code = round(sum(item["dimension_scores"].get("code", 0.0) for item in items) / len(items), 2)
+            avg_instruction = round(sum(item["dimension_scores"].get("instruction", 0.0) for item in items) / len(items), 2)
+            payload[series] = {
+                "count": len(items),
+                "average_overall": avg_overall,
+                "average_code": avg_code,
+                "average_instruction": avg_instruction,
+                "best_model": ranked[0]["model_id"],
+                "best_score": ranked[0]["overall_score"],
+            }
+        return payload
+
+    def qwen_cc_notes(self, summary: dict[str, Any]) -> tuple[str, str, str]:
+        dim = summary["dimension_scores"]
+        code = dim.get("code", 0.0)
+        instruction = dim.get("instruction", 0.0)
+        chat = dim.get("chat", 0.0)
+        long_context = dim.get("long_context", 0.0)
+        strengths: list[str] = []
+        weaknesses: list[str] = []
+        if code >= 80:
+            strengths.append("strong code edits")
+        elif code >= 50:
+            strengths.append("usable supervised coding")
+        else:
+            weaknesses.append("weak code completion")
+        if instruction >= 80:
+            strengths.append("good output discipline")
+        elif instruction < 50:
+            weaknesses.append("format drift")
+        if long_context >= 80:
+            strengths.append("holds repo constraints")
+        if chat < 50:
+            weaknesses.append("review commentary can wander")
+        best_use_case = "cc-style coding" if code >= max(chat, instruction, long_context) else "cc-style analysis"
+        return ", ".join(strengths) or "mixed", ", ".join(weaknesses) or "none observed", best_use_case
+
     def run_full_baseline(self) -> dict[str, Any]:
         profiles = self.load_profiles()
         profile = profiles["full_baseline"]
@@ -804,4 +913,112 @@ class BenchmarkRunner:
         }
         rows = self.rows_for_summaries(summaries, tuned=True)
         self.write_stage_outputs(stem="tuned", payload=payload, rows=rows, title="Tuned Report")
+        return payload
+
+    def run_qwen_cc(self) -> dict[str, Any]:
+        profiles = self.load_profiles()
+        profile = profiles["qwen_cc_baseline"]
+        task_suites = get_suite_tasks(self.task_file, "qwen_cc")
+        mcp_state = self.mcp_health()
+        status = self.client.models_status()
+        qwen_models = [model for model in status["models"] if self.is_qwen_family_model(model)]
+        claude_path = self.claude_code_cli_path()
+
+        self.log_event(
+            "qwen_cc_start",
+            {
+                "model_count": len(qwen_models),
+                "claude_code_cli_detected": bool(claude_path),
+                "claude_code_cli_path": claude_path,
+            },
+        )
+        self.apply_baseline_sampling("qwen_cc_baseline")
+        checkpoint_path = self.paths.results / "qwen-cc-checkpoint.json"
+        summaries: list[dict[str, Any]] = []
+        completed_models: set[str] = set()
+        if checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            summaries = checkpoint.get("summaries", [])
+            completed_models = {item["model_id"] for item in summaries}
+
+        for model in qwen_models:
+            if model["id"] in completed_models:
+                continue
+            summary = self.run_model_suite(
+                model=model,
+                task_suites=task_suites,
+                profile=profile,
+                mcp_state=mcp_state,
+                screening_only=False,
+            )
+            summary["series"] = self.qwen_series(model["id"])
+            summary["overall_score"] = self.qwen_cc_overall_score(summary["dimension_scores"])
+            summary["recommended_settings"] = compact_settings(profile)
+            strengths, weaknesses, best_use_case = self.qwen_cc_notes(summary)
+            summary["typical_strengths"] = strengths
+            summary["typical_weaknesses"] = weaknesses
+            summary["best_use_case"] = best_use_case
+            summaries.append(summary)
+            write_json(
+                checkpoint_path,
+                {
+                    "generated_at": utc_now(),
+                    "profile": profile,
+                    "claude_code_cli": {"detected": bool(claude_path), "path": claude_path},
+                    "summaries": summaries,
+                },
+            )
+
+        ranked = sorted(summaries, key=lambda item: item["overall_score"], reverse=True)
+        series_summary = self.summarize_qwen_series(ranked)
+        payload = {
+            "generated_at": utc_now(),
+            "profile": profile,
+            "claude_code_cli": {
+                "detected": bool(claude_path),
+                "path": claude_path,
+                "note": "Local Claude Code CLI was detected, but these results come from oMLX local Qwen-family models under Claude Code-like prompts, not from running the models inside Claude Code itself.",
+            },
+            "mcp_state": mcp_state,
+            "summaries": ranked,
+            "series_summary": series_summary,
+        }
+        rows = self.qwen_cc_rows(ranked)
+        write_json(self.paths.results / "qwen-cc-summary.json", payload)
+        write_csv(self.paths.results / "qwen-cc-summary.csv", rows)
+
+        series_rows = []
+        for series, item in series_summary.items():
+            series_rows.append(
+                {
+                    "Series": series,
+                    "Models": item["count"],
+                    "Average overall": item["average_overall"],
+                    "Average code": item["average_code"],
+                    "Average instruction": item["average_instruction"],
+                    "Best model": item["best_model"],
+                    "Best score": item["best_score"],
+                }
+            )
+        report = [
+            "# Qwen Claude-Code-Style Report",
+            "",
+            f"- Generated at: `{payload['generated_at']}`",
+            f"- Claude Code CLI detected: `{payload['claude_code_cli']['detected']}`",
+            f"- Claude Code CLI path: `{claude_path or 'not found'}`",
+            f"- Note: {payload['claude_code_cli']['note']}",
+            "",
+            "## Model Ranking",
+            "",
+            markdown_table(rows, QWEN_CC_COLUMNS),
+            "",
+            "## Series Comparison",
+            "",
+            markdown_table(
+                series_rows,
+                ["Series", "Models", "Average overall", "Average code", "Average instruction", "Best model", "Best score"],
+            ),
+            "",
+        ]
+        (self.paths.reports / "qwen-cc-report.md").write_text("\n".join(report), encoding="utf-8")
         return payload

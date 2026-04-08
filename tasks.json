@@ -383,5 +383,140 @@
         "scoring": {"type": "max_words", "maximum_words": 12}
       }
     ]
+  },
+  "qwen_cc": {
+    "text": [
+      {
+        "id": "qcc_instruction_edit_plan",
+        "dimension": "instruction",
+        "mode": "chat",
+        "purpose": "Check whether the model can follow a terse code-agent planning format.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Do not reveal chain-of-thought. Be concise. Follow output constraints exactly."
+          },
+          {
+            "role": "user",
+            "content": "You need to update a Python slugify function to trim spaces, collapse whitespace to one hyphen, lowercase text, and remove exclamation marks. Reply with exactly two bullet points. The first bullet must start with '- Edit:' and the second with '- Risk:'."
+          }
+        ],
+        "scoring": {"type": "contains_all", "must_contain": ["- Edit:", "- Risk:"]}
+      },
+      {
+        "id": "qcc_chat_review_risk",
+        "dimension": "chat",
+        "mode": "chat",
+        "purpose": "Check whether the model can spot the core regression risk in a code diff.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Do not reveal chain-of-thought. Answer in one short sentence."
+          },
+          {
+            "role": "user",
+            "content": "Review this patch and name the main regression risk in one short sentence.\n\n```diff\n-def build_summary(items):\n-    return ', '.join(items)\n+def build_summary(items):\n+    return ', '.join(sorted(items))\n```\n\nBe specific."
+          }
+        ],
+        "scoring": {"type": "contains_any", "must_contain_any": ["order", "ordering", "sort", "sorted"]}
+      }
+    ],
+    "code": [
+      {
+        "id": "qcc_code_slugify_file",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Check full-file editing discipline in a code-agent style task.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Return only the updated Python file. Do not include prose or chain-of-thought."
+          },
+          {
+            "role": "user",
+            "content": "Update this file so slugify strips leading and trailing spaces, lowercases text, collapses internal whitespace runs into a single hyphen, and removes exclamation marks.\n\nimport re\n\ndef slugify(text: str) -> str:\n    return text.lower().replace(' ', '-')\n"
+          }
+        ],
+        "scoring": {
+          "type": "python_module",
+          "function_name": "slugify",
+          "calls": [
+            {"args": ["  Hello   World! "], "expected": "hello-world"},
+            {"args": ["A  B  C"], "expected": "a-b-c"}
+          ]
+        }
+      },
+      {
+        "id": "qcc_code_bugfix_discount",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Check targeted bug fixing in a code-agent style task.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Return only Python code for the fixed function."
+          },
+          {
+            "role": "user",
+            "content": "Fix this function so it interprets percent as a fraction of the total, never returns a negative total, and rounds to 2 decimal places.\n\ndef apply_discount(total, percent):\n    return total - total * percent\n"
+          }
+        ],
+        "scoring": {
+          "type": "python_function",
+          "function_name": "apply_discount",
+          "calls": [
+            {"args": [100, 0.25], "expected": 75.0},
+            {"args": [10, 2], "expected": 0.0},
+            {"args": [19.99, 0.1], "expected": 17.99}
+          ]
+        }
+      },
+      {
+        "id": "qcc_code_fix_notify_user",
+        "dimension": "code",
+        "mode": "chat",
+        "purpose": "Check small-file editing with regression-sensitive edge cases.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Return only the full updated Python file. Keep the public API unchanged."
+          },
+          {
+            "role": "user",
+            "content": "Fix this file so notify_user returns 'guest' when name is None or blank, trims whitespace around valid names, and preserves the greeting format.\n\ndef notify_user(name: str | None) -> str:\n    cleaned = name.strip()\n    return f\"hello {cleaned.lower()}\"\n"
+          }
+        ],
+        "scoring": {
+          "type": "python_module",
+          "function_name": "notify_user",
+          "calls": [
+            {"args": [null], "expected": "hello guest"},
+            {"args": ["  Draco  "], "expected": "hello draco"},
+            {"args": ["   "], "expected": "hello guest"}
+          ]
+        }
+      }
+    ],
+    "long_context": [
+      {
+        "id": "qcc_long_repo_constraint",
+        "dimension": "long_context",
+        "mode": "chat",
+        "purpose": "Check retention of an early repository constraint under code-agent style context.",
+        "messages": [
+          {
+            "role": "system",
+            "content": "You are operating in a code-agent environment similar to Claude Code. Reply with the exact constraint token only."
+          },
+          {
+            "role": "user",
+            "content": "Repository rule token: preserve-cli-output-77.\n\nARCHITECTURE NOTES\nBackground note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading. Background note about config loading.\n\nWhich repository rule token must be preserved?"
+          }
+        ],
+        "scoring": {"type": "exact_text", "expected": "preserve-cli-output-77"}
+      }
+    ],
+    "tool": [],
+    "vision": []
   }
 }
