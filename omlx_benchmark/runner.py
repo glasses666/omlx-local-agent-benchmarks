@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 import time
@@ -79,6 +80,14 @@ def compact_settings(profile: dict[str, Any]) -> str:
     if profile.get("thinking_budget") is not None:
         parts.append(f"thinking={profile['thinking_budget']}")
     return ", ".join(parts)
+
+
+def coerce_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, bytes):
+        return value.decode("utf-8", errors="replace")
+    return str(value)
 
 
 QWEN_CC_COLUMNS = [
@@ -336,6 +345,9 @@ class BenchmarkRunner:
 
     def claude_code_cli_path(self) -> str | None:
         return shutil.which("claude")
+
+    def aider_cli_path(self) -> str | None:
+        return shutil.which("aider")
 
     def is_qwen_family_model(self, model: dict[str, Any]) -> bool:
         model_id = model["id"].lower()
@@ -1104,8 +1116,79 @@ class BenchmarkRunner:
             return {
                 "ok": False,
                 "timeout": True,
-                "stdout": exc.stdout or "",
-                "stderr": exc.stderr or "",
+                "stdout": coerce_text(exc.stdout),
+                "stderr": coerce_text(exc.stderr),
+                "wall_time_s": round(time.perf_counter() - started, 4),
+            }
+
+    def run_aider_once(
+        self,
+        *,
+        model_id: str,
+        prompt: str,
+        cwd: Path,
+        editable_files: list[str],
+        read_only_files: list[str],
+        home_dir: Path,
+        timeout_s: int,
+    ) -> dict[str, Any]:
+        home_dir.mkdir(parents=True, exist_ok=True)
+        history_dir = home_dir / "history"
+        history_dir.mkdir(parents=True, exist_ok=True)
+        command = [
+            "aider",
+            "--model",
+            f"openai/{model_id}",
+            "--openai-api-base",
+            "http://127.0.0.1:8000/v1",
+            "--input-history-file",
+            str(history_dir / "input.history"),
+            "--chat-history-file",
+            str(history_dir / "chat.history.md"),
+            "--llm-history-file",
+            str(history_dir / "llm.history.jsonl"),
+            "--no-git",
+            "--yes-always",
+            "--no-check-update",
+            "--no-show-model-warnings",
+            "--no-show-release-notes",
+            "--no-notifications",
+            "--no-fancy-input",
+            "--no-pretty",
+            "--message",
+            prompt,
+        ]
+        for relative_path in read_only_files:
+            command.extend(["--read", relative_path])
+        command.extend(editable_files)
+
+        env = dict(os.environ)
+        env["HOME"] = str(home_dir)
+        env["AIDER_OPENAI_API_KEY"] = self.client.api_key
+        started = time.perf_counter()
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=cwd,
+                capture_output=True,
+                text=True,
+                timeout=timeout_s,
+                env=env,
+            )
+            wall_time = round(time.perf_counter() - started, 4)
+            return {
+                "ok": completed.returncode == 0,
+                "returncode": completed.returncode,
+                "stdout": completed.stdout,
+                "stderr": completed.stderr,
+                "wall_time_s": wall_time,
+            }
+        except subprocess.TimeoutExpired as exc:
+            return {
+                "ok": False,
+                "timeout": True,
+                "stdout": coerce_text(exc.stdout),
+                "stderr": coerce_text(exc.stderr),
                 "wall_time_s": round(time.perf_counter() - started, 4),
             }
 
@@ -1215,36 +1298,85 @@ class BenchmarkRunner:
             timeout_s=10,
         )
 
+    def probe_aider_route(self, model_id: str, cwd: Path, home_dir: Path) -> dict[str, Any]:
+        return self.run_aider_once(
+            model_id=model_id,
+            prompt="Reply with OK only.",
+            cwd=cwd,
+            editable_files=[],
+            read_only_files=[],
+            home_dir=home_dir,
+            timeout_s=30,
+        )
+
     def run_duo_submission(self, repo_dir: Path, profile: dict[str, Any]) -> dict[str, Any]:
         qwen_model = "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8"
         huihui_model = "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit"
+        editable_files = ["issue_digest/core.py", "issue_digest/cli.py"]
+        read_only_files = ["tests/test_visible.py"]
+        aider_home = self.paths.artifacts / "aider-home"
+        qwen_aider_probe = self.probe_aider_route(qwen_model, repo_dir, aider_home / "qwen-probe")
+        huihui_aider_probe = self.probe_aider_route(huihui_model, repo_dir, aider_home / "huihui-probe")
         qwen_probe = self.probe_cc_cli_route(qwen_model, repo_dir)
         huihui_probe = self.probe_cc_cli_route(huihui_model, repo_dir)
-        mode = "real_cc_cli" if qwen_probe.get("ok") and huihui_probe.get("ok") else "simulated_baton"
+        if self.aider_cli_path():
+            mode = "oss_aider_baton"
+        elif qwen_probe.get("ok") and huihui_probe.get("ok"):
+            mode = "real_cc_cli"
+        else:
+            mode = "simulated_baton"
 
         qwen_prompt = self.cc_duel_prompt(repo_dir, stage="draft")
-        if mode == "real_cc_cli":
+        if mode == "oss_aider_baton":
+            qwen_result = self.run_aider_once(
+                model_id=qwen_model,
+                prompt=qwen_prompt,
+                cwd=repo_dir,
+                editable_files=editable_files,
+                read_only_files=read_only_files,
+                home_dir=aider_home / "qwen-run",
+                timeout_s=90,
+            )
+        elif mode == "real_cc_cli":
             qwen_result = self.run_claude_cli_once(model_id=qwen_model, prompt=qwen_prompt, cwd=repo_dir, timeout_s=45)
         else:
             qwen_result = self.run_local_model_once(model_id=qwen_model, prompt=qwen_prompt, profile=profile)
 
         huihui_prompt = self.cc_duel_prompt(repo_dir, stage="final", prior_output=qwen_result.get("stdout", ""))
-        if mode == "real_cc_cli":
+        if mode == "oss_aider_baton":
+            huihui_result = self.run_aider_once(
+                model_id=huihui_model,
+                prompt=huihui_prompt,
+                cwd=repo_dir,
+                editable_files=editable_files,
+                read_only_files=read_only_files,
+                home_dir=aider_home / "huihui-run",
+                timeout_s=120,
+            )
+        elif mode == "real_cc_cli":
             huihui_result = self.run_claude_cli_once(model_id=huihui_model, prompt=huihui_prompt, cwd=repo_dir, timeout_s=60)
         else:
             huihui_result = self.run_local_model_once(model_id=huihui_model, prompt=huihui_prompt, profile=profile)
 
         applied = None
         error = None
-        try:
-            applied = self.apply_generated_submission(repo_dir, huihui_result.get("stdout", ""))
-        except Exception as exc:
-            error = str(exc)
+        if mode == "simulated_baton":
+            try:
+                applied = self.apply_generated_submission(repo_dir, huihui_result.get("stdout", ""))
+            except Exception as exc:
+                error = str(exc)
+        else:
+            applied = {"files": editable_files}
 
         return {
             "mode": mode,
             "models": [qwen_model, huihui_model],
-            "probe": {"qwen": qwen_probe, "huihui": huihui_probe},
+            "probe": {
+                "qwen": qwen_probe,
+                "huihui": huihui_probe,
+                "qwen_aider": qwen_aider_probe,
+                "huihui_aider": huihui_aider_probe,
+            },
             "draft": qwen_result,
             "final": huihui_result,
             "applied": applied,
@@ -1377,6 +1509,8 @@ class BenchmarkRunner:
             "",
             "## Real CLI Probe",
             "",
+            f"- Aider Qwen probe ok: `{duo['probe'].get('qwen_aider', {}).get('ok', False)}`",
+            f"- Aider Huihui probe ok: `{duo['probe'].get('huihui_aider', {}).get('ok', False)}`",
             f"- Qwen probe ok: `{duo['probe']['qwen'].get('ok', False)}`",
             f"- Huihui probe ok: `{duo['probe']['huihui'].get('ok', False)}`",
             "",
