@@ -10,7 +10,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run oMLX local model benchmarks.")
     parser.add_argument(
         "command",
-        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "qwen-cc", "cc-duo-duel", "all"],
+        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "qwen-cc", "cc-duo-duel", "cc-realrepo-duel", "all"],
         help="Benchmark action to run.",
     )
     parser.add_argument(
@@ -72,6 +72,13 @@ def main() -> int:
         finally:
             runner.restore_global_sampling()
         return 0
+    if args.command == "cc-realrepo-duel":
+        runner.inspect_environment()
+        try:
+            runner.run_cc_realrepo_duel()
+        finally:
+            runner.restore_global_sampling()
+        return 0
     if args.command == "all":
         runner.inspect_environment()
         runner.backup_relevant_files()
@@ -81,6 +88,7 @@ def main() -> int:
             runner.run_tuned()
             runner.run_qwen_cc()
             runner.run_cc_duo_duel()
+            runner.run_cc_realrepo_duel()
         finally:
             runner.restore_global_sampling()
         return 0

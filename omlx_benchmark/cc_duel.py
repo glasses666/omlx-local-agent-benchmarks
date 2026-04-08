@@ -9,10 +9,62 @@ from pathlib import Path
 from typing import Any
 
 
-ALLOWED_SOURCE_PATHS = [
-    "issue_digest/core.py",
-    "issue_digest/cli.py",
-]
+DUEL_SCENARIOS: dict[str, dict[str, Any]] = {
+    "issue_digest": {
+        "slug": "issue_digest",
+        "title": "Issue Digest",
+        "challenge": (
+            "Update this Python CLI project so it supports '--status open|closed|all' "
+            "filtering and '--format text|json'. Keep default text output behavior "
+            "compatible, sort results by priority descending then title ascending, "
+            "do not add dependencies, do not rename the CLI module, and modify only "
+            "issue_digest/core.py and issue_digest/cli.py."
+        ),
+        "allowed_source_paths": [
+            "issue_digest/core.py",
+            "issue_digest/cli.py",
+        ],
+        "context_paths": [
+            "issue_digest/core.py",
+            "issue_digest/cli.py",
+            "tests/test_visible.py",
+        ],
+        "template_dir": "issue_digest_template",
+        "solution_dir": "issue_digest_codex_solution",
+        "hidden_tests_dir": "issue_digest_hidden_tests",
+        "report_stem": "cc-duo-duel",
+        "report_title": "CC Duo Duel Report",
+    },
+    "release_audit": {
+        "slug": "release_audit",
+        "title": "Release Audit",
+        "challenge": (
+            "Update this Python CLI project so it supports '--channel stable|beta|all' "
+            "filtering and '--format text|json'. Keep default text output behavior "
+            "compatible, sort entries by severity descending then component ascending "
+            "then title ascending, do not add dependencies, do not rename the CLI module, "
+            "and modify only release_audit/core.py, release_audit/render.py, and release_audit/cli.py."
+        ),
+        "allowed_source_paths": [
+            "release_audit/core.py",
+            "release_audit/render.py",
+            "release_audit/cli.py",
+        ],
+        "context_paths": [
+            "release_audit/core.py",
+            "release_audit/render.py",
+            "release_audit/cli.py",
+            "tests/test_visible.py",
+        ],
+        "template_dir": "release_audit_template",
+        "solution_dir": "release_audit_codex_solution",
+        "hidden_tests_dir": "release_audit_hidden_tests",
+        "report_stem": "cc-realrepo-duel",
+        "report_title": "CC Real Repo Duel Report",
+    },
+}
+
+ALLOWED_SOURCE_PATHS = DUEL_SCENARIOS["issue_digest"]["allowed_source_paths"]
 
 IGNORE_DIFF_PREFIXES = (
     ".pytest_cache/",
@@ -22,14 +74,23 @@ IGNORE_DIFF_PREFIXES = (
 )
 
 
-def challenge_description() -> str:
-    return (
-        "Update this Python CLI project so it supports '--status open|closed|all' "
-        "filtering and '--format text|json'. Keep default text output behavior "
-        "compatible, sort results by priority descending then title ascending, "
-        "do not add dependencies, do not rename the CLI module, and modify only "
-        "issue_digest/core.py and issue_digest/cli.py."
-    )
+def duel_scenario(name: str = "issue_digest") -> dict[str, Any]:
+    try:
+        return DUEL_SCENARIOS[name]
+    except KeyError as exc:
+        raise ValueError(f"Unknown duel scenario: {name}") from exc
+
+
+def challenge_description(name: str = "issue_digest") -> str:
+    return str(duel_scenario(name)["challenge"])
+
+
+def allowed_source_paths(name: str = "issue_digest") -> list[str]:
+    return list(duel_scenario(name)["allowed_source_paths"])
+
+
+def context_paths(name: str = "issue_digest") -> list[str]:
+    return list(duel_scenario(name)["context_paths"])
 
 
 def read_repo_context(repo_dir: Path, relative_paths: list[str]) -> str:

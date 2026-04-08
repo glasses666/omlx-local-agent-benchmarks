@@ -14,9 +14,12 @@ from .admin_api import OMLXAdminClient
 from .backup import backup_file
 from .cc_duel import (
     ALLOWED_SOURCE_PATHS,
+    allowed_source_paths,
     challenge_description,
     constraint_violations,
+    context_paths,
     copy_repo_tree,
+    duel_scenario,
     evaluate_patch_cleanliness,
     extract_json_payload,
     normalize_generated_files,
@@ -1085,20 +1088,22 @@ class BenchmarkRunner:
         (self.paths.reports / "qwen-cc-report.md").write_text("\n".join(report), encoding="utf-8")
         return payload
 
-    def cc_duel_assets(self) -> dict[str, Path]:
+    def cc_duel_assets(self, scenario_name: str = "issue_digest") -> dict[str, Path]:
         root = self.root / "benchmark_projects"
+        scenario = duel_scenario(scenario_name)
         return {
-            "template_dir": root / "issue_digest_template",
-            "solution_dir": root / "issue_digest_codex_solution",
-            "hidden_tests_dir": root / "issue_digest_hidden_tests",
+            "template_dir": root / scenario["template_dir"],
+            "solution_dir": root / scenario["solution_dir"],
+            "hidden_tests_dir": root / scenario["hidden_tests_dir"],
         }
 
-    def cc_duel_system_prompt(self, stage: str) -> str:
+    def cc_duel_system_prompt(self, stage: str, scenario_name: str = "issue_digest") -> str:
+        allowed = ", ".join(allowed_source_paths(scenario_name))
         common = [
             "You are operating as a disciplined coding agent in a one-shot benchmark.",
             "Behavior goals: be exact, constraint-aware, minimal, and test-oriented.",
             "Never reveal chain-of-thought or hidden reasoning. Give only concise execution updates when you finish.",
-            "Only modify issue_digest/core.py and issue_digest/cli.py.",
+            f"Only modify these files: {allowed}.",
             "Do not modify tests, project structure, dependencies, or CLI module names.",
             "Read the visible tests before editing code and treat them as executable requirements, not suggestions.",
         ]
@@ -1124,8 +1129,20 @@ class BenchmarkRunner:
             )
         return "\n".join(common)
 
-    def cc_duel_prompt(self, repo_dir: Path, *, stage: str, prior_output: str | None = None) -> str:
-        repo_context = read_repo_context(repo_dir, ALLOWED_SOURCE_PATHS + ["tests/test_visible.py"])
+    def cc_duel_prompt(
+        self,
+        repo_dir: Path,
+        *,
+        stage: str,
+        scenario_name: str = "issue_digest",
+        prior_output: str | None = None,
+    ) -> str:
+        repo_context = read_repo_context(repo_dir, context_paths(scenario_name))
+        sort_rule = (
+            "5. sort by priority descending then title ascending."
+            if scenario_name == "issue_digest"
+            else "5. sort by severity descending then component ascending then title ascending."
+        )
         prompt = []
         if stage == "draft":
             prompt.extend(
@@ -1147,14 +1164,14 @@ class BenchmarkRunner:
             [
                 "",
                 "Challenge:",
-                challenge_description(),
+                challenge_description(scenario_name),
                 "",
                 "Required workflow:",
                 "1. Read tests/test_visible.py first.",
                 "2. Read the allowed source files.",
                 "3. Edit only the allowed source files." if stage != "draft" else "3. Do not edit files in this stage.",
                 "4. Keep default behavior compatible unless the challenge explicitly changes it.",
-                "5. sort by priority descending then title ascending.",
+                sort_rule,
             ]
         )
         if stage == "final":
@@ -1370,10 +1387,10 @@ class BenchmarkRunner:
         self.unload_all_models()
         return {"ok": True, "stdout": message, "response": response, "wall_time_s": wall_time}
 
-    def prepare_cc_duel_run(self) -> dict[str, Path]:
-        assets = self.cc_duel_assets()
+    def prepare_cc_duel_run(self, scenario_name: str = "issue_digest") -> dict[str, Path]:
+        assets = self.cc_duel_assets(scenario_name)
         timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
-        duel_root = self.paths.runs / f"cc-duo-duel-{timestamp}"
+        duel_root = self.paths.runs / f"{duel_scenario(scenario_name)['report_stem']}-{timestamp}"
         duo_repo = duel_root / "team-duo"
         codex_repo = duel_root / "team-codex"
         copy_repo_tree(assets["template_dir"], duo_repo)
@@ -1385,10 +1402,10 @@ class BenchmarkRunner:
             **assets,
         }
 
-    def apply_generated_submission(self, repo_dir: Path, output_text: str) -> dict[str, Any]:
+    def apply_generated_submission(self, repo_dir: Path, output_text: str, allowed_paths: list[str]) -> dict[str, Any]:
         payload = extract_json_payload(output_text)
         files = normalize_generated_files(payload)
-        allowed_files = {path: content for path, content in files.items() if path in ALLOWED_SOURCE_PATHS}
+        allowed_files = {path: content for path, content in files.items() if path in allowed_paths}
         if not allowed_files:
             raise ValueError("No allowed files were returned by the model")
         write_generated_files(repo_dir, allowed_files)
@@ -1408,13 +1425,14 @@ class BenchmarkRunner:
         entrant: str,
         mode: str,
         model_label: str,
+        allowed_paths: list[str],
         repo_dir: Path,
         template_dir: Path,
         hidden_tests_dir: Path,
         raw_output: str,
         wall_time_s: float,
     ) -> dict[str, Any]:
-        violations = constraint_violations(template_dir, repo_dir, ALLOWED_SOURCE_PATHS)
+        violations = constraint_violations(template_dir, repo_dir, allowed_paths)
         visible = run_unittest(repo_dir, ["discover", "-s", "tests", "-v"])
         hidden_stage = self.stage_hidden_tests(repo_dir, hidden_tests_dir)
         hidden = run_unittest(repo_dir, ["discover", "-s", hidden_stage.name, "-v"])
@@ -1431,9 +1449,9 @@ class BenchmarkRunner:
             "raw_output": raw_output,
         }
 
-    def codex_cc_duel_submission(self, repo_dir: Path, solution_dir: Path) -> dict[str, Any]:
+    def codex_cc_duel_submission(self, repo_dir: Path, solution_dir: Path, allowed_paths: list[str]) -> dict[str, Any]:
         started = time.perf_counter()
-        for relative_path in ALLOWED_SOURCE_PATHS:
+        for relative_path in allowed_paths:
             source = solution_dir / relative_path
             destination = repo_dir / relative_path
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -1463,7 +1481,7 @@ class BenchmarkRunner:
             tools="",
         )
 
-    def run_duo_submission(self, repo_dir: Path, profile: dict[str, Any]) -> dict[str, Any]:
+    def run_duo_submission(self, repo_dir: Path, profile: dict[str, Any], scenario_name: str = "issue_digest") -> dict[str, Any]:
         qwen_model = "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8"
         huihui_model = "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit"
         agent_home = self.paths.artifacts / "openclaude-home"
@@ -1478,8 +1496,8 @@ class BenchmarkRunner:
         else:
             mode = "simulated_baton"
 
-        qwen_prompt = self.cc_duel_prompt(repo_dir, stage="draft")
-        qwen_system_prompt = self.cc_duel_system_prompt("draft")
+        qwen_prompt = self.cc_duel_prompt(repo_dir, stage="draft", scenario_name=scenario_name)
+        qwen_system_prompt = self.cc_duel_system_prompt("draft", scenario_name)
         if mode == "oss_openclaude_baton":
             qwen_result = self.run_openclaude_once(
                 model_id=qwen_model,
@@ -1495,8 +1513,13 @@ class BenchmarkRunner:
         else:
             qwen_result = self.run_local_model_once(model_id=qwen_model, prompt=qwen_prompt, profile=profile)
 
-        huihui_prompt = self.cc_duel_prompt(repo_dir, stage="final", prior_output=qwen_result.get("stdout", ""))
-        huihui_system_prompt = self.cc_duel_system_prompt("final")
+        huihui_prompt = self.cc_duel_prompt(
+            repo_dir,
+            stage="final",
+            scenario_name=scenario_name,
+            prior_output=qwen_result.get("stdout", ""),
+        )
+        huihui_system_prompt = self.cc_duel_system_prompt("final", scenario_name)
         if mode == "oss_openclaude_baton":
             huihui_result = self.run_openclaude_once(
                 model_id=huihui_model,
@@ -1514,13 +1537,14 @@ class BenchmarkRunner:
 
         applied = None
         error = None
+        current_allowed_paths = allowed_source_paths(scenario_name)
         if mode == "simulated_baton":
             try:
-                applied = self.apply_generated_submission(repo_dir, huihui_result.get("stdout", ""))
+                applied = self.apply_generated_submission(repo_dir, huihui_result.get("stdout", ""), current_allowed_paths)
             except Exception as exc:
                 error = str(exc)
         else:
-            applied = {"files": ["issue_digest/core.py", "issue_digest/cli.py"]}
+            applied = {"files": current_allowed_paths}
 
         return {
             "mode": mode,
@@ -1563,7 +1587,8 @@ class BenchmarkRunner:
             return "Team Codex wins"
         return "Draw"
 
-    def run_cc_duo_duel(self) -> dict[str, Any]:
+    def run_cc_scenario_duel(self, scenario_name: str) -> dict[str, Any]:
+        scenario = duel_scenario(scenario_name)
         profile = self.load_profiles()["cc_duo_duel"]
         status = self.client.models_status()
         available_models = [item["id"] for item in status["models"]]
@@ -1577,13 +1602,15 @@ class BenchmarkRunner:
 
         self.apply_baseline_sampling("cc_duo_duel")
         self.unload_all_models()
-        assets = self.prepare_cc_duel_run()
+        assets = self.prepare_cc_duel_run(scenario_name)
+        current_allowed_paths = allowed_source_paths(scenario_name)
 
-        duo = self.run_duo_submission(assets["duo_repo"], profile)
+        duo = self.run_duo_submission(assets["duo_repo"], profile, scenario_name)
         duo_result = self.evaluate_cc_duel_repo(
             entrant="Team Duo",
             mode=duo["mode"],
             model_label="Qwen 9B HighIQ -> Huihui 35B A3B 8bit",
+            allowed_paths=current_allowed_paths,
             repo_dir=assets["duo_repo"],
             template_dir=assets["template_dir"],
             hidden_tests_dir=assets["hidden_tests_dir"],
@@ -1591,11 +1618,12 @@ class BenchmarkRunner:
             wall_time_s=duo["wall_time_s"],
         )
 
-        codex_submission = self.codex_cc_duel_submission(assets["codex_repo"], assets["solution_dir"])
+        codex_submission = self.codex_cc_duel_submission(assets["codex_repo"], assets["solution_dir"], current_allowed_paths)
         codex_result = self.evaluate_cc_duel_repo(
             entrant="Team Codex",
             mode="direct_one_pass",
             model_label="Codex",
+            allowed_paths=current_allowed_paths,
             repo_dir=assets["codex_repo"],
             template_dir=assets["template_dir"],
             hidden_tests_dir=assets["hidden_tests_dir"],
@@ -1631,7 +1659,8 @@ class BenchmarkRunner:
 
         payload = {
             "generated_at": utc_now(),
-            "challenge": challenge_description(),
+            "scenario": scenario_name,
+            "challenge": challenge_description(scenario_name),
             "available_models": available_models,
             "duo": {
                 **duo,
@@ -1644,12 +1673,13 @@ class BenchmarkRunner:
             "verdict": verdict,
             "note": "System Python did not have pytest installed, so the duel used standard-library unittest suites for visible and hidden checks while preserving the same test-count comparison logic.",
         }
-        write_json(self.paths.results / "cc-duo-duel.json", payload)
-        write_csv(self.paths.results / "cc-duo-duel.csv", rows)
+        write_json(self.paths.results / f"{scenario['report_stem']}.json", payload)
+        write_csv(self.paths.results / f"{scenario['report_stem']}.csv", rows)
         report = [
-            "# CC Duo Duel Report",
+            f"# {scenario['report_title']}",
             "",
             f"- Generated at: `{payload['generated_at']}`",
+            f"- Scenario: `{scenario_name}`",
             f"- Verdict: **{verdict}**",
             f"- Duo mode: `{duo['mode']}`",
             f"- Note: {payload['note']}",
@@ -1685,6 +1715,12 @@ class BenchmarkRunner:
             duo["system_prompts"]["huihui"],
             "",
         ]
-        (self.paths.reports / "cc-duo-duel.md").write_text("\n".join(report), encoding="utf-8")
-        self.log_event("cc_duo_duel_complete", {"verdict": verdict, "mode": duo["mode"]})
+        (self.paths.reports / f"{scenario['report_stem']}.md").write_text("\n".join(report), encoding="utf-8")
+        self.log_event("cc_duo_duel_complete", {"scenario": scenario_name, "verdict": verdict, "mode": duo["mode"]})
         return payload
+
+    def run_cc_duo_duel(self) -> dict[str, Any]:
+        return self.run_cc_scenario_duel("issue_digest")
+
+    def run_cc_realrepo_duel(self) -> dict[str, Any]:
+        return self.run_cc_scenario_duel("release_audit")

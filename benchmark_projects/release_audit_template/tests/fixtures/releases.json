@@ -1,0 +1,37 @@
+[
+  {
+    "channel": "stable",
+    "severity": 4,
+    "component": "api",
+    "title": "Add bulk export",
+    "notes": "Adds batched export endpoints."
+  },
+  {
+    "channel": "stable",
+    "severity": 5,
+    "component": "api",
+    "title": "Fix auth regressions",
+    "notes": "Restores legacy token refresh behavior."
+  },
+  {
+    "channel": "beta",
+    "severity": 2,
+    "component": "docs",
+    "title": "Add migration guide",
+    "notes": "Documents migration caveats for beta adopters."
+  },
+  {
+    "channel": "beta",
+    "severity": 5,
+    "component": "cli",
+    "title": "Improve dry-run diagnostics",
+    "notes": "Shows the exact impacted resources before apply."
+  },
+  {
+    "channel": "stable",
+    "severity": 3,
+    "component": "ui",
+    "title": "Polish release banner",
+    "notes": "Improves spacing and readability on narrow screens."
+  }
+]
