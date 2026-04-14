@@ -47,6 +47,7 @@ Supporting tracked notes:
 - [Manual Qwen CC Review](manual-qwen-cc-review.md)
 - [Manual Qwen Duel Review](manual-qwen-duel-review.md)
 - [Manual JANG 2L Long Review](manual-jang-2l-long-review.md)
+- [Manual JANG 3L Long Review](manual-jang-3l-long-review.md)
 
 ## Reproduce
 
