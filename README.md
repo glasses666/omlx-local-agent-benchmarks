@@ -24,6 +24,19 @@ This repository contains:
   - 35B as final closer / test runner
   - `openclaude` as the OSS agent runtime
 
+## Benchmark Test Machine
+
+Unless a report says otherwise, the benchmark runs and experiment notes in this repository were produced on this machine:
+
+- Hardware: MacBook Pro
+- Chip: Apple M5 Max
+- Memory: 128 GB unified memory
+- Operating system: macOS 26.4
+
+Full reference:
+
+- [Test Machine](TEST_MACHINE.md)
+
 ## Key Report
 
 - [Experiment Report 2026-04-09](EXPERIMENT_REPORT_2026-04-09.md)
