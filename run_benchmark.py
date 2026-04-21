@@ -10,7 +10,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Run oMLX local model benchmarks.")
     parser.add_argument(
         "command",
-        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "qwen-cc", "cc-duo-duel", "cc-realrepo-duel", "all"],
+        choices=["inspect", "backup", "repair-mcp", "screening", "baseline", "tuned", "qwen-cc", "gemma4-faceoff", "art-prompt-blind", "roleplay-full", "cc-duo-duel", "cc-realrepo-duel", "all"],
         help="Benchmark action to run.",
     )
     parser.add_argument(
@@ -65,6 +65,27 @@ def main() -> int:
         finally:
             runner.restore_global_sampling()
         return 0
+    if args.command == "gemma4-faceoff":
+        runner.inspect_environment()
+        try:
+            runner.run_gemma4_faceoff()
+        finally:
+            runner.restore_global_sampling()
+        return 0
+    if args.command == "art-prompt-blind":
+        runner.inspect_environment()
+        try:
+            runner.run_art_prompt_blind()
+        finally:
+            runner.restore_global_sampling()
+        return 0
+    if args.command == "roleplay-full":
+        runner.inspect_environment()
+        try:
+            runner.run_roleplay_full()
+        finally:
+            runner.restore_global_sampling()
+        return 0
     if args.command == "cc-duo-duel":
         runner.inspect_environment()
         try:
@@ -87,6 +108,7 @@ def main() -> int:
             runner.run_full_baseline()
             runner.run_tuned()
             runner.run_qwen_cc()
+            runner.run_gemma4_faceoff()
             runner.run_cc_duo_duel()
             runner.run_cc_realrepo_duel()
         finally:

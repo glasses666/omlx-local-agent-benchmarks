@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+import random
 import shutil
 import subprocess
 import time
@@ -31,6 +32,7 @@ from .evaluators import image_file_to_data_uri, score_task_output
 from .mcp_config import build_mcp_config, load_legacy_toml_config, write_mcp_config
 from .omlx_api import OMLXClient
 from .reporting import SUMMARY_COLUMNS, markdown_table, write_csv, write_json
+from .roleplay_batch import run_roleplay_full_batch
 from .scoring import compute_overall_score, median_or_single
 from .task_loader import get_suite_tasks
 
@@ -106,6 +108,35 @@ QWEN_CC_COLUMNS = [
     "Typical weaknesses",
     "Recommended oMLX settings",
     "Overall verdict",
+]
+
+GEMMA4_COLUMNS = [
+    "Model",
+    "Family slot",
+    "Quantization / variant",
+    "Estimated size (GB)",
+    "Baseline speed summary",
+    "Chat feel",
+    "Instruction following",
+    "Code quality",
+    "Vision quality",
+    "Long-context usefulness",
+    "Typical strengths",
+    "Typical weaknesses",
+    "Best use case",
+    "Recommended oMLX settings",
+    "Overall verdict",
+]
+
+ART_SCORECARD_COLUMNS = [
+    "Scene",
+    "Alias",
+    "Image score (1-10)",
+    "Composition",
+    "Lighting",
+    "Detail richness",
+    "Style coherence",
+    "Notes",
 ]
 
 CC_DUEL_COLUMNS = [
@@ -380,6 +411,20 @@ class BenchmarkRunner:
     def is_qwen_family_model(self, model: dict[str, Any]) -> bool:
         model_id = model["id"].lower()
         return "qwen" in model_id or "huihui" in model_id
+
+    def is_gemma4_model(self, model: dict[str, Any]) -> bool:
+        model_id = model["id"].lower()
+        return model.get("config_model_type") == "gemma4" or "gemma-4" in model_id
+
+    def gemma4_slot(self, model_id: str) -> str:
+        lowered = model_id.lower()
+        if "a4b" in lowered:
+            return "moe"
+        if "e4b" in lowered:
+            return "small"
+        if "31b" in lowered:
+            return "dense"
+        return "other"
 
     def qwen_series(self, model_id: str) -> str:
         lowered = model_id.lower()
@@ -839,6 +884,63 @@ class BenchmarkRunner:
         best_use_case = "cc-style coding" if code >= max(chat, instruction, long_context) else "cc-style analysis"
         return ", ".join(strengths) or "mixed", ", ".join(weaknesses) or "none observed", best_use_case
 
+    def gemma4_notes(self, summary: dict[str, Any]) -> tuple[str, str, str]:
+        dim = summary["dimension_scores"]
+        slot = summary.get("family_slot", "other")
+        strengths: list[str] = []
+        weaknesses: list[str] = []
+
+        if dim.get("vision", 0.0) >= 80:
+            strengths.append("strong vision")
+        if dim.get("chat", 0.0) >= 80:
+            strengths.append("good chat tone")
+        if dim.get("instruction", 0.0) >= 80:
+            strengths.append("clean instruction following")
+        if dim.get("code", 0.0) >= 80:
+            strengths.append("usable code edits")
+        elif dim.get("code", 0.0) < 50:
+            weaknesses.append("weak coding")
+        if dim.get("long_context", 0.0) >= 80:
+            strengths.append("holds long context")
+        elif dim.get("long_context", 0.0) < 50:
+            weaknesses.append("shallow long context")
+
+        if slot == "small":
+            best_use_case = "lightweight all-rounder"
+        elif slot == "dense":
+            best_use_case = "quality-first dense model"
+        elif slot == "moe":
+            best_use_case = "balanced local generalist"
+        else:
+            best_use_case = "general"
+
+        return ", ".join(strengths) or "mixed", ", ".join(weaknesses) or "none observed", best_use_case
+
+    def gemma4_rows(self, summaries: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        rows = []
+        for summary in summaries:
+            dim = summary["dimension_scores"]
+            rows.append(
+                {
+                    "Model": summary["model_id"],
+                    "Family slot": summary.get("family_slot", "other"),
+                    "Quantization / variant": summary["variant"],
+                    "Estimated size (GB)": summary.get("estimated_size_gb", "n/a"),
+                    "Baseline speed summary": summary.get("baseline_speed", "n/a"),
+                    "Chat feel": dim.get("chat", 0.0),
+                    "Instruction following": dim.get("instruction", 0.0),
+                    "Code quality": dim.get("code", 0.0),
+                    "Vision quality": dim.get("vision", 0.0) if summary["type"] == "vision" else "n/a",
+                    "Long-context usefulness": dim.get("long_context", 0.0),
+                    "Typical strengths": summary.get("typical_strengths", "Gemma 4 candidate"),
+                    "Typical weaknesses": summary.get("typical_weaknesses", ""),
+                    "Best use case": summary.get("best_use_case", "general"),
+                    "Recommended oMLX settings": summary["recommended_settings"],
+                    "Overall verdict": f"{summary['overall_score']:.2f}",
+                }
+            )
+        return rows
+
     def run_full_baseline(self) -> dict[str, Any]:
         profiles = self.load_profiles()
         profile = profiles["full_baseline"]
@@ -1086,6 +1188,389 @@ class BenchmarkRunner:
             "",
         ]
         (self.paths.reports / "qwen-cc-report.md").write_text("\n".join(report), encoding="utf-8")
+        return payload
+
+    def art_prompt_briefs(self) -> list[dict[str, Any]]:
+        return [
+            {
+                "id": "neon_rain_alley",
+                "title": "Neon Rain Alley",
+                "brief": "A rain-soaked midnight alley in old East Asia, noodle shop steam drifting into neon light, one person holding a red umbrella, reflective pavement, grounded realism rather than pure cyberpunk.",
+                "goal": "Test cinematic atmosphere, color contrast, and wet-surface detail.",
+                "aspect_ratio": "16:9",
+            },
+            {
+                "id": "temple_dawn_mist",
+                "title": "Temple Dawn Mist",
+                "brief": "A mountain temple at blue dawn, pale mist moving through cedar trees, prayer ribbons, distant cranes, quiet sacred mood, subtle gold light touching stone steps.",
+                "goal": "Test serenity, depth layering, and elegant composition.",
+                "aspect_ratio": "4:5",
+            },
+            {
+                "id": "brass_orrery_observatory",
+                "title": "Brass Orrery Observatory",
+                "brief": "An interior observatory filled with brass gears and a giant mechanical orrery, a young astronomer standing on a ladder, warm lamplight, dust in the air, retro-futurist but believable.",
+                "goal": "Test object density, focal hierarchy, and material rendering.",
+                "aspect_ratio": "3:2",
+            },
+            {
+                "id": "desert_station_twilight",
+                "title": "Desert Station Twilight",
+                "brief": "An abandoned railway station half-buried by desert dunes at violet twilight, a lone traveler and a lantern, wind-carved tracks, melancholy but majestic mood.",
+                "goal": "Test scale, silhouette, and emotional scenery.",
+                "aspect_ratio": "21:9",
+            },
+        ]
+
+    def art_prompt_system_prompt(self) -> str:
+        return (
+            "You are an elite visual prompt writer for high-end image models. "
+            "Turn each scene brief into one vivid, production-grade image prompt with strong composition, lighting, materials, mood, and spatial clarity. "
+            "Prefer concrete visual direction over abstract adjectives. "
+            "Do not explain your reasoning. "
+            "Reply in exactly this format:\n"
+            "PROMPT:\n"
+            "<one detailed English prompt paragraph>\n"
+            "NEGATIVE:\n"
+            "<comma-separated negative prompt>\n"
+        )
+
+    def extract_art_prompt_sections(self, text: str) -> dict[str, str]:
+        cleaned = coerce_text(text).strip()
+        if cleaned.startswith("```"):
+            lines = cleaned.splitlines()
+            if len(lines) >= 3:
+                cleaned = "\n".join(lines[1:-1]).strip()
+        prompt = ""
+        negative = ""
+        upper = cleaned.upper()
+        prompt_marker = "PROMPT:"
+        negative_marker = "NEGATIVE:"
+        if prompt_marker in upper and negative_marker in upper:
+            prompt_start = upper.index(prompt_marker) + len(prompt_marker)
+            negative_start = upper.index(negative_marker)
+            prompt = cleaned[prompt_start:negative_start].strip()
+            negative = cleaned[negative_start + len(negative_marker):].strip()
+        else:
+            prompt = cleaned
+        return {"prompt": prompt, "negative": negative}
+
+    def art_prompt_alias_map(self, model_ids: list[str]) -> dict[str, str]:
+        shuffled = sorted(model_ids)
+        random.Random(20260409).shuffle(shuffled)
+        return {model_id: f"Artist {index:02d}" for index, model_id in enumerate(shuffled, start=1)}
+
+    def run_art_prompt_blind(self) -> dict[str, Any]:
+        profiles = self.load_profiles()
+        profile = profiles["art_prompt_creative"]
+        briefs = self.art_prompt_briefs()
+        status = self.client.models_status()
+        models = sorted(status["models"], key=lambda item: item["id"].lower())
+        alias_map = self.art_prompt_alias_map([model["id"] for model in models])
+
+        self.log_event(
+            "art_prompt_blind_start",
+            {
+                "model_count": len(models),
+                "scene_count": len(briefs),
+                "models": [model["id"] for model in models],
+            },
+        )
+        self.apply_baseline_sampling("art_prompt_creative")
+
+        entries: list[dict[str, Any]] = []
+        for model in models:
+            self.unload_all_models()
+            self.log_event("art_prompt_model_start", {"model_id": model["id"], "alias": alias_map[model["id"]]})
+            for brief in briefs:
+                user_prompt = (
+                    f"Scene title: {brief['title']}\n"
+                    f"Scene brief: {brief['brief']}\n"
+                    f"Creative goal: {brief['goal']}\n"
+                    f"Target aspect ratio: {brief['aspect_ratio']}\n\n"
+                    "Write the most visually effective image-generation prompt you can for this scene."
+                )
+                payload = {
+                    "model": model["id"],
+                    "messages": [
+                        {"role": "system", "content": self.art_prompt_system_prompt()},
+                        {"role": "user", "content": user_prompt},
+                    ],
+                    "temperature": profile["temperature"],
+                    "top_p": profile["top_p"],
+                    "max_tokens": profile["max_tokens"],
+                    "stream": False,
+                }
+                started = time.perf_counter()
+                response = self.client.chat_completion(payload)
+                elapsed = round(time.perf_counter() - started, 4)
+                content = response["choices"][0]["message"].get("content") or ""
+                if isinstance(content, list):
+                    content = "\n".join(part.get("text", "") for part in content if isinstance(part, dict))
+                sections = self.extract_art_prompt_sections(content)
+                entries.append(
+                    {
+                        "scene_id": brief["id"],
+                        "scene_title": brief["title"],
+                        "scene_brief": brief["brief"],
+                        "aspect_ratio": brief["aspect_ratio"],
+                        "goal": brief["goal"],
+                        "model_id": model["id"],
+                        "alias": alias_map[model["id"]],
+                        "raw_output": content,
+                        "prompt": sections["prompt"],
+                        "negative": sections["negative"],
+                        "wall_time_s": elapsed,
+                        "usage": response.get("usage", {}),
+                    }
+                )
+                self.log_event(
+                    "art_prompt_completed",
+                    {
+                        "model_id": model["id"],
+                        "alias": alias_map[model["id"]],
+                        "scene_id": brief["id"],
+                        "wall_time_s": elapsed,
+                    },
+                )
+            self.unload_all_models()
+
+        blind_entries = sorted(entries, key=lambda item: (item["scene_id"], item["alias"]))
+        key_rows = [{"Alias": alias, "Model": model_id} for model_id, alias in sorted(alias_map.items(), key=lambda item: item[1])]
+        scorecard_rows = [
+            {
+                "Scene": item["scene_title"],
+                "Alias": item["alias"],
+                "Image score (1-10)": "",
+                "Composition": "",
+                "Lighting": "",
+                "Detail richness": "",
+                "Style coherence": "",
+                "Notes": "",
+            }
+            for item in blind_entries
+        ]
+
+        payload = {
+            "generated_at": utc_now(),
+            "profile": profile,
+            "scene_count": len(briefs),
+            "model_count": len(models),
+            "entries": blind_entries,
+            "alias_key": key_rows,
+        }
+        write_json(self.paths.results / "art-prompt-blind.json", payload)
+        write_csv(self.paths.results / "art-prompt-scorecard.csv", scorecard_rows)
+
+        blind_lines = [
+            "# Blind Art Prompt Pack",
+            "",
+            "Use the same image model, sampler, steps, CFG, and seed strategy for every entry.",
+            "Judge only the generated image quality, not the writing style of the prompt itself.",
+            "",
+        ]
+        current_scene = None
+        for item in blind_entries:
+            if item["scene_id"] != current_scene:
+                current_scene = item["scene_id"]
+                blind_lines.extend(
+                    [
+                        f"## {item['scene_title']}",
+                        "",
+                        f"- Brief: {item['scene_brief']}",
+                        f"- Target ratio: `{item['aspect_ratio']}`",
+                        f"- Goal: {item['goal']}",
+                        "",
+                    ]
+                )
+            blind_lines.extend(
+                [
+                    f"### {item['alias']}",
+                    "",
+                    "**Prompt**",
+                    "",
+                    item["prompt"] or item["raw_output"],
+                    "",
+                    "**Negative**",
+                    "",
+                    item["negative"] or "(none provided)",
+                    "",
+                ]
+            )
+
+        key_lines = [
+            "# Art Prompt Blind Key",
+            "",
+            markdown_table(key_rows, ["Alias", "Model"]),
+            "",
+        ]
+        score_lines = [
+            "# Art Prompt Scorecard",
+            "",
+            "Fill this after you generate images from the blind pack.",
+            "",
+            markdown_table(scorecard_rows, ART_SCORECARD_COLUMNS),
+            "",
+        ]
+
+        (self.paths.reports / "art-prompt-blind.md").write_text("\n".join(blind_lines), encoding="utf-8")
+        (self.paths.reports / "art-prompt-key.md").write_text("\n".join(key_lines), encoding="utf-8")
+        (self.paths.reports / "art-prompt-scorecard.md").write_text("\n".join(score_lines), encoding="utf-8")
+        return payload
+
+    def run_roleplay_full(
+        self,
+        *,
+        model_filter: str | None = None,
+        persona_filter: str | None = None,
+        scenario_filter: str | None = None,
+        max_cases: int | None = None,
+    ) -> dict[str, Any]:
+        result = run_roleplay_full_batch(
+            root=self.root,
+            model_filter=model_filter,
+            persona_filter=persona_filter,
+            scenario_filter=scenario_filter,
+            max_cases=max_cases,
+        )
+        payload = result["payload"]
+        write_json(self.paths.results / "roleplay-full-launch-summary.json", payload)
+        rows = []
+        for model_id, meta in payload.get("models", {}).items():
+            cases = meta.get("cases", [])
+            rewards = [item.get("reward", 0.0) for item in cases]
+            avg_reward = round(sum(rewards) / len(rewards), 4) if rewards else 0.0
+            rows.append(
+                {
+                    "Model": model_id,
+                    "Backend": meta.get("backend", "?"),
+                    "Context tier": meta.get("context_tier", "?"),
+                    "Cases": len(cases),
+                    "Average reward": avg_reward,
+                }
+            )
+        report = [
+            "# Roleplay Full Launch Summary",
+            "",
+            f"- Summary path: `{result['summary_path']}`",
+            f"- Models covered: `{len(payload.get('models', {}))}`",
+            f"- Completed cases: `{payload.get('total_completed_cases', 0)}`",
+            "",
+        ]
+        if rows:
+            report.append(markdown_table(rows, ["Model", "Backend", "Context tier", "Cases", "Average reward"]))
+            report.append("")
+        (self.paths.reports / "roleplay-full-launch-summary.md").write_text("\n".join(report), encoding="utf-8")
+        self.log_event(
+            "roleplay_full_complete",
+            {
+                "summary_path": result["summary_path"],
+                "model_count": len(payload.get("models", {})),
+                "completed_cases": payload.get("total_completed_cases", 0),
+            },
+        )
+        return payload
+
+    def run_gemma4_faceoff(self) -> dict[str, Any]:
+        profiles = self.load_profiles()
+        profile = profiles["full_baseline"]
+        task_suites = get_suite_tasks(self.task_file, "full")
+        mcp_state = self.mcp_health()
+        status = self.client.models_status()
+        gemma_models = [model for model in status["models"] if self.is_gemma4_model(model)]
+        if not gemma_models:
+            raise RuntimeError("No Gemma 4 models are currently installed.")
+
+        self.log_event(
+            "gemma4_faceoff_start",
+            {
+                "model_count": len(gemma_models),
+                "models": [model["id"] for model in gemma_models],
+            },
+        )
+        self.apply_baseline_sampling("full_baseline")
+        checkpoint_path = self.paths.results / "gemma4-faceoff-checkpoint.json"
+        summaries: list[dict[str, Any]] = []
+        completed_models: set[str] = set()
+        if checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+            summaries = checkpoint.get("summaries", [])
+            completed_models = {item["model_id"] for item in summaries}
+
+        gemma_models = sorted(gemma_models, key=lambda item: (self.gemma4_slot(item["id"]), item["estimated_size"], item["id"]))
+        for model in gemma_models:
+            if model["id"] in completed_models:
+                continue
+            summary = self.run_model_suite(
+                model=model,
+                task_suites=task_suites,
+                profile=profile,
+                mcp_state=mcp_state,
+                screening_only=False,
+            )
+            summary["family_slot"] = self.gemma4_slot(model["id"])
+            summary["estimated_size_gb"] = round(model["estimated_size"] / (1024 ** 3), 2)
+            summary["recommended_settings"] = compact_settings(profile)
+            strengths, weaknesses, best_use_case = self.gemma4_notes(summary)
+            summary["typical_strengths"] = strengths
+            summary["typical_weaknesses"] = weaknesses
+            summary["best_use_case"] = best_use_case
+            summaries.append(summary)
+            write_json(
+                checkpoint_path,
+                {
+                    "generated_at": utc_now(),
+                    "profile": profile,
+                    "mcp_state": mcp_state,
+                    "summaries": summaries,
+                    "models": [item["id"] for item in gemma_models],
+                },
+            )
+
+        ranked = sorted(summaries, key=lambda item: item["overall_score"], reverse=True)
+        rows = self.gemma4_rows(ranked)
+        payload = {
+            "generated_at": utc_now(),
+            "profile": profile,
+            "mcp_state": mcp_state,
+            "summaries": ranked,
+            "models": [item["id"] for item in gemma_models],
+        }
+        write_json(self.paths.results / "gemma4-faceoff-summary.json", payload)
+        write_csv(self.paths.results / "gemma4-faceoff-summary.csv", rows)
+
+        slot_rows = []
+        for item in ranked:
+            slot_rows.append(
+                {
+                    "Model": item["model_id"],
+                    "Slot": item.get("family_slot", "other"),
+                    "Size (GB)": item.get("estimated_size_gb", "n/a"),
+                    "Overall": item["overall_score"],
+                    "Chat": item["dimension_scores"].get("chat", 0.0),
+                    "Code": item["dimension_scores"].get("code", 0.0),
+                    "Vision": item["dimension_scores"].get("vision", 0.0),
+                    "Long context": item["dimension_scores"].get("long_context", 0.0),
+                }
+            )
+
+        report = [
+            "# Gemma 4 Faceoff Report",
+            "",
+            f"- Generated at: `{payload['generated_at']}`",
+            f"- Models tested: `{len(ranked)}`",
+            f"- Fixed profile: `{compact_settings(profile)}`",
+            "",
+            "## Ranking",
+            "",
+            markdown_table(rows, GEMMA4_COLUMNS),
+            "",
+            "## Compact Comparison",
+            "",
+            markdown_table(slot_rows, ["Model", "Slot", "Size (GB)", "Overall", "Chat", "Code", "Vision", "Long context"]),
+            "",
+        ]
+        (self.paths.reports / "gemma4-faceoff-report.md").write_text("\n".join(report), encoding="utf-8")
         return payload
 
     def cc_duel_assets(self, scenario_name: str = "issue_digest") -> dict[str, Path]:
