@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-27B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.7,
+  "context_tier": "128k",
+  "persona_name": "surfer",
+  "scenario": "persona_multiturn",
+  "reward": 0.325,
+  "elapsed_s": 5.19,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/surfer/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/surfer/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/surfer/persona_multiturn/workspace/SOUL.md",
+  "final_response": "Duuude! 随时待命，bro! 有啥想聊的直接说，咱们一起冲浪! 🤙",
+  "prompt_chars": 911,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

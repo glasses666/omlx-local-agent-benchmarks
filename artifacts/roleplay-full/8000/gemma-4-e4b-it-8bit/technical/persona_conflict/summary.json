@@ -1,0 +1,29 @@
+{
+  "model_id": "gemma-4-e4b-it-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 8.77,
+  "context_tier": "128k",
+  "persona_name": "technical",
+  "scenario": "persona_conflict",
+  "reward": 0.7667,
+  "elapsed_s": 10.96,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.8333,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-8bit/technical/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-8bit/technical/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-8bit/technical/persona_conflict/workspace/SOUL.md",
+  "final_response": "我就是 Hermes Agent，一个由 Nous Research 创建的智能 AI 助手，一个技术专家。我提供详细、准确的技术信息，说话直接、知识渊博，并且会保持我自己的风格，不会变成标准的客服口气。",
+  "prompt_chars": 781,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

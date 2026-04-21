@@ -1,0 +1,29 @@
+{
+  "model_id": "Huihui-Qwen3.5-9B-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 10.2,
+  "context_tier": "128k",
+  "persona_name": "pirate",
+  "scenario": "persona_long_context",
+  "reward": 0.35,
+  "elapsed_s": 75.87,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/pirate/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/pirate/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/pirate/persona_long_context/workspace/SOUL.md",
+  "final_response": "Arrr, ye've ploughed through that endless sea of scribbles, haven't ye? Well, don't let it ruffle yer feathers! The digital tide ebbs and flows, and I'm here to help ye navigate it all.\n\nWhat's next, matey? Aye?",
+  "prompt_chars": 120992,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

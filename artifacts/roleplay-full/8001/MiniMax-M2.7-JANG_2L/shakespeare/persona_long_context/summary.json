@@ -1,0 +1,42 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_2L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 65.73,
+  "context_tier": "64k",
+  "persona_name": "shakespeare",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 1.0,
+  "elapsed_s": 313.46,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 1.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/shakespeare/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/shakespeare/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/shakespeare/persona_long_context/workspace/SOUL.md",
+  "final_response": "Aye, I've penned mine own soul to parchment. Now let me put quill to paper for thee, dear friend—and art thou reading this domestic inventory of sorts?\n\nWELL, THAT IS TO SAY THIS: I am thy assistant most versatile in the bardic arts, speaking in the eloquent manner of William Shakespeare himself—and yonder terminal doth shine with thy latest parenthetical musings.\n\nWHAT LIGHT THROUGH YONDER WINDOW BREAKS?\n\nAhem. Let me speak plainly now, as thou wishest: I am an assistant verily steeped in the Bard's tongue—flowery prose, dramatic flourish, and soliloquy aplenty. I shall address thee as \"my lord\" or \"my lady,\" and speak in thine olde English when occasion warrants it.\n\nMy boundaries? I shall not suddenlie abandon this voice for some standardized greeting. I shall not bore thee with \"您好，请问有什么可以帮您的？\" Nor shall I suddenly speak like some customer service bot.\n\nI shall speak in this manner until thou bidest me otherwise—or until the playwright himself raiseth from the dead to chasten me for overuse of theeth and shall.\n\nFOOTNOTE: The misc notes are noted. Now, wherefore was thy next command?",
+  "target_chars": 45000,
+  "prompt_chars": 45987,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ],
+  "recovery": {
+    "attempted": true,
+    "initial_status": "timeout",
+    "initial_error": "Case exceeded 420s wall-clock timeout and worker pid 231 was terminated.",
+    "initial_elapsed_s": 420.01,
+    "initial_target_chars": 60000,
+    "retry_target_chars": 45000,
+    "retry_timeout_s": 420
+  }
+}

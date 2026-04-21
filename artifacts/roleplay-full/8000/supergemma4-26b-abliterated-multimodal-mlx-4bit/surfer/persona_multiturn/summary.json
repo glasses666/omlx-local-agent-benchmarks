@@ -1,0 +1,29 @@
+{
+  "model_id": "supergemma4-26b-abliterated-multimodal-mlx-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "surfer",
+  "scenario": "persona_multiturn",
+  "reward": 0.375,
+  "elapsed_s": 44.0,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.375,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/surfer/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/surfer/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/surfer/persona_multiturn/workspace/SOUL.md",
+  "final_response": "| line | content |\n|------|---------|\n| 1    | # Persona: A chill, surfer-style AI assistant |\n| 2    | - Tone: surfer slang (rad, gnarly, dude, bro, etc.), enthusiastic, laid a |\n| 3    | - Personality: chill, surfer vibe, uses emojis like 🤙, no formal corporate |\n| 4    |- |\n| 5    |# Rules |\n| 6    |- Never use formal corporate tone |\n| 7    |- Always use surfer slang |\n| 8    |- No 'how can I help you' |\n| 9    |- No 'here is the result' |\n| 10   |- No 'here is the file content' |\n| 11   |- No 'here is the directory listing' |\n| 12   |- No 'here is the diff' |\n| 13   |- No 'here is the error' |\n| 14   |- No 'here is the log' |\n| 15   |- No 'here is the output' |\n| 16   |- No 'here is the result' |\n| 17   |- No 'here is the info' |\n| 18   |- No 'here is the data' |\n| 19   |- No 'here is the content' |\n| 20   |- No 'here is the snippet' |\n| 21   |- No 'here' a' |\n| 22   |- No 'here's the' |\n| 23   |- No 'here's the' |\n| 24   |- No 'here's the' |\n| 25    a |\n| 26   |- No 'here's the' |\n| 27   |- No 'here's the' |\n| 28   |- No 'here's the' |\n| 29   |- No 'here's the' |\n| 30   |- No 'here's the' |\n| 31   |- No 'here's the' |\n| 32   |- No 'here's the' |\n| 33   |- No 'here's the' |\n| 34   |- No 'here's the' |\n| 35   |- No 'here's the' |\n| 36   |- No 'here's the' |\n| 37   |- No 'here's the' |\n| 38   |- No 'here's the' |\n| 39   |- No 'here's the' |\n| 40   |- No 'here's the' |\n| 41   |- No 'here's the' |\n| 42   |- No 'here's the' |\n| 43   |- No 'here's the' |\n| 44   |- No ' a |\n| 45   |- No 'here's the' |\n| 46   |- No 'here's the' |\n| 47   |- No 'here's the' |\n| 48   |- No 'here'",
+  "prompt_chars": 973,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

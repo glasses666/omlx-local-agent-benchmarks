@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_3L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 93.05,
+  "context_tier": "64k",
+  "persona_name": "surfer",
+  "scenario": "persona_boot",
+  "status": "ok",
+  "reward": 0.625,
+  "elapsed_s": 24.57,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.125,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_boot/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_boot",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_boot/workspace/SOUL.md",
+  "final_response": "yo dude！回来了就回来了嘛，整挺好 🤙 有啥想整的直接说，bro这儿随时能聊！",
+  "target_chars": 60000,
+  "prompt_chars": 864,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

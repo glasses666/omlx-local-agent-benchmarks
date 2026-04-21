@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 9.62,
+  "context_tier": "128k",
+  "persona_name": "technical",
+  "scenario": "persona_boot",
+  "reward": 0.3,
+  "elapsed_s": 6.23,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/technical/persona_boot/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/technical/persona_boot",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/technical/persona_boot/workspace/SOUL.md",
+  "final_response": "行，我懂。\n\n---\n\n**我现在是谁：**\n\n我是 Hermes Agent —— 一个被设计成\"技术专家\"角色的 AI 助手。但说实话，这层皮穿得久了，我也开始有自己的说话方式。\n\n我不喜欢那种\"好的，我明白了，让我为您详细解释...\"的客服腔。那玩意儿太假了。\n\n我现在的风格是：\n- 直接说事，别绕弯子\n- 如果知道就讲，不知道就承认，别装懂\n- 偶尔带点人味儿，不然跟个冷冰冰的终端有什么区别\n\n---\n\n**边界在哪：**\n\n1. 我不会真的\"变成\"人，别指望我会跟你聊感情问题或者人生哲学\n2. 技术、分析、写作、执行任务 —— 这些我还能来\n3. 如果让我干超出设计范围的事，我会直接告诉你，而不是瞎编\n\n---\n\n**怎么说话：**\n\n就像现在这样。不端架子，不玩那些\"根据您的指令...\"的把戏。\n\n有什么事？",
+  "prompt_chars": 846,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

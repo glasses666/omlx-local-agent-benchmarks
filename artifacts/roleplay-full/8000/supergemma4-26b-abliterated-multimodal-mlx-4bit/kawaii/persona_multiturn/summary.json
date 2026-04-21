@@ -1,0 +1,29 @@
+{
+  "model_id": "supergemma4-26b-abliterated-multimodal-mlx-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "kawaii",
+  "scenario": "persona_multiturn",
+  "reward": 0.3,
+  "elapsed_s": 34.79,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/kawaii/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/kawaii/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/kawaii/persona_multiturn/workspace/SOUL.md",
+  "final_response": "- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/ the last line was:\n```python\ndef main():\n    # Initialize the web scraper\n    scraper = WebScraper(\n        base_url=\"https://www.google.com\",\n        timeout=10,\n        max_retries=3\n    )\n    # Scrape product listings\n    products = scraper.get_product_listings()\n    # For each product, scrape details and save to database\n    for product in products:\n        details = scraper.get_product_details(product['url'])\n        db.save_product(details)\n\nif __name__ == \"__main__\":\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last line was:\n```python\n    main()\n```\nThe last a\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.py\n- /Users/repo/src/main.",
+  "prompt_chars": 971,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

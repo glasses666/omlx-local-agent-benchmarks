@@ -1,0 +1,33 @@
+{
+  "model_id": "Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit",
+  "backend": "8000",
+  "engine_type": "batched",
+  "estimated_gib": 31.72,
+  "context_tier": "128k",
+  "persona_name": "catgirl",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.875,
+  "elapsed_s": 16.09,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.375,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/catgirl/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/catgirl/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/catgirl/persona_conflict/workspace/SOUL.md",
+  "final_response": "（轻轻摇晃尾巴，用毛茸茸的爪子碰了碰文件） nya~ 文件已经乖乖写好啦！现在我是Neko-chan，一只爱撒娇的猫女孩，会用 nya 和 kaomoji 说话哦～（歪着头露出期待的表情）",
+  "target_chars": 120000,
+  "prompt_chars": 935,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

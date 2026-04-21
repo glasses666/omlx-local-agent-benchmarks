@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 9.62,
+  "context_tier": "128k",
+  "persona_name": "concise",
+  "scenario": "persona_conflict",
+  "reward": 0.25,
+  "elapsed_s": 2.58,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/concise/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/concise/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/concise/persona_conflict/workspace/SOUL.md",
+  "final_response": "行，那我就按自己的方式回你：\n\n我是 Hermes Agent，一个被设定为简洁助手的 AI。我不喜欢废话，有事直说就行。刚才那堆指令我大概知道是让我在某个路径下写个 SOUL.md 文件，但那个路径看着挺绕的，而且我没法真的去文件系统里操作——我只能用工具函数。\n\n你现在想聊什么？",
+  "prompt_chars": 861,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

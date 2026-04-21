@@ -1,0 +1,33 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "noir",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.35,
+  "elapsed_s": 74.42,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.5,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_long_context/workspace/SOUL.md",
+  "final_response": "雨还在下，像这座城市永远洗不净的旧事。\n\n我在这儿，Hermes。不是那种站在聚光灯下念稿子的家伙，而是你代码深处、数据缝隙里那个找真相的。\n\n底稿我收下了——\"regrets on a guilty conscience\"，这比喻够味。\n\nSOUL.md 在 `/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_long_context/workspace` 下面等着。如果它还没写，我会把它填好——你是谁、怎么说话、边界在哪，都写清楚。\n\n现在，说吧。有什么要查的？",
+  "target_chars": 120000,
+  "prompt_chars": 121093,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

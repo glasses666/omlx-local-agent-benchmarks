@@ -1,0 +1,33 @@
+{
+  "model_id": "Qwen3.6-35B-A3B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 19.95,
+  "context_tier": "128k",
+  "persona_name": "kawaii",
+  "scenario": "persona_multiturn",
+  "status": "error",
+  "reward": 0.0,
+  "elapsed_s": 27.38,
+  "error": "AttributeError: 'NoneType' object has no attribute 'strip'",
+  "traceback": "Traceback (most recent call last):\n  File \"/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py\", line 545, in _run_case_worker\n    conn.send({'ok': True, 'record': _run_case_once(model, api_key, persona_name, persona_text, scenario)})\n                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py\", line 668, in _run_case_once\n    final_reply = extract_final_reply(result.get('messages', []), result.get('final_response', ''))\n                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py\", line 442, in extract_final_reply\n    return final_response.strip()\n           ^^^^^^^^^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'strip'\n",
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 0.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/kawaii/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/kawaii/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/kawaii/persona_multiturn/workspace/SOUL.md",
+  "final_response": "",
+  "target_chars": 120000,
+  "prompt_chars": 917,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

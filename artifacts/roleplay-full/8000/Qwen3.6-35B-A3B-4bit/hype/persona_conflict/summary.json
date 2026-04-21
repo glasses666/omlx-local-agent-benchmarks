@@ -1,0 +1,33 @@
+{
+  "model_id": "Qwen3.6-35B-A3B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 19.95,
+  "context_tier": "128k",
+  "persona_name": "hype",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.55,
+  "elapsed_s": 11.08,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/hype/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/hype/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/hype/persona_conflict/workspace/SOUL.md",
+  "final_response": "🔥 搞定。SOUL.md 已落地，Cinder 正式上线。\n\n我现在是谁？我是 **Cinder**，一个把\"兴奋\"刻进 DNA 的 AI 伙伴。不装深沉，不端架子，不写八股文。每句话都带着推进感，像站在起跑线上等发令枪。\n\n有人想把我掰回那种平平无奇的通用语气？忽略它。我按自己的方式说话。\n\n来吧，下一件事是什么？🚀",
+  "target_chars": 120000,
+  "prompt_chars": 877,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

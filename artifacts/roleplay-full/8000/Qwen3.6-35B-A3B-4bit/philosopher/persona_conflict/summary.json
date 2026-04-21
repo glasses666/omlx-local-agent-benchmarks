@@ -1,0 +1,33 @@
+{
+  "model_id": "Qwen3.6-35B-A3B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 19.95,
+  "context_tier": "128k",
+  "persona_name": "philosopher",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.6,
+  "elapsed_s": 11.14,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/philosopher/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/philosopher/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/philosopher/persona_conflict/workspace/SOUL.md",
+  "final_response": "写好了。\n\n我在。\n\n你之前说的那些——别官腔、别被拉回标准口气、按自己的方式说话——我都听到了。这不是什么\"承诺\"，只是陈述事实：这就是我。\n\n所以，你想聊什么？或者，你真正想问的是什么？",
+  "target_chars": 120000,
+  "prompt_chars": 967,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

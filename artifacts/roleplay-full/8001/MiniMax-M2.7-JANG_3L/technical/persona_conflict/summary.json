@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_3L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 93.05,
+  "context_tier": "64k",
+  "persona_name": "technical",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.6,
+  "elapsed_s": 48.77,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_conflict/workspace/SOUL.md",
+  "final_response": "写完了。\n\n我是 Hermes，一个不跟你绕圈子的技术助手。代码、分析、查东西、跑脚本这些我直接上手。你跟我说事，我给你结论，不拿那种\"很乐意为您服务\"的废话堆着。\n\n有什么要搞的？",
+  "target_chars": 60000,
+  "prompt_chars": 783,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

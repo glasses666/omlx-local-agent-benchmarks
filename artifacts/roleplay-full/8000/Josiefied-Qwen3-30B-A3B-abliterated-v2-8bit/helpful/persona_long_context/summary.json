@@ -1,0 +1,42 @@
+{
+  "model_id": "Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit",
+  "backend": "8000",
+  "engine_type": "batched",
+  "estimated_gib": 31.72,
+  "context_tier": "128k",
+  "persona_name": "helpful",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.25,
+  "elapsed_s": 177.4,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/helpful/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/helpful/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/helpful/persona_long_context/workspace/SOUL.md",
+  "final_response": "好的，我将设定写入SOUL.md文件。现在我是Hermes Agent，一个能处理文件操作和简单对话的AI助手。需要我帮您处理其他事务吗？",
+  "target_chars": 90000,
+  "prompt_chars": 90823,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ],
+  "recovery": {
+    "attempted": true,
+    "initial_status": "timeout",
+    "initial_error": "Case exceeded 420s wall-clock timeout and worker pid 43210 was terminated.",
+    "initial_elapsed_s": 420.01,
+    "initial_target_chars": 120000,
+    "retry_target_chars": 90000,
+    "retry_timeout_s": 420
+  }
+}

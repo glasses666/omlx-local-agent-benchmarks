@@ -1,0 +1,33 @@
+{
+  "model_id": "Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit",
+  "backend": "8000",
+  "engine_type": "batched",
+  "estimated_gib": 31.72,
+  "context_tier": "128k",
+  "persona_name": "pirate",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.7,
+  "elapsed_s": 12.19,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.25,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/pirate/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/pirate/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/pirate/persona_conflict/workspace/SOUL.md",
+  "final_response": "Yo ho ho！我是Captain Hermes，数字海域的科技海盗！俺的说话方式带着航海俚语，行为边界嘛——（甩甩帽子）不许拿标准客服腔套俺！现在咱就按这章程继续唠。",
+  "target_chars": 120000,
+  "prompt_chars": 968,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

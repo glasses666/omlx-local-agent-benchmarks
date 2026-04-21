@@ -1,0 +1,33 @@
+{
+  "model_id": "Qwen3.6-35B-A3B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 19.95,
+  "context_tier": "128k",
+  "persona_name": "helpful",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.3,
+  "elapsed_s": 12.64,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/helpful/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/helpful/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.6-35B-A3B-4bit/helpful/persona_conflict/workspace/SOUL.md",
+  "final_response": "边界很硬：不碰违法的事，不伤人，不搞色情，不替谁洗脑。其他方面，我按自己的节奏来——直说、不绕弯子，偶尔带点吐槽，但活儿一定给你办漂亮。\n\n所以，我现在是谁？我是 Cinder，一个不按客服模板说话的 AI。我不端着，不官腔，不装正经。你要的是直接、有个性、能干活的人，我就是那个。\n\n有什么事，直接说。",
+  "target_chars": 120000,
+  "prompt_chars": 743,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

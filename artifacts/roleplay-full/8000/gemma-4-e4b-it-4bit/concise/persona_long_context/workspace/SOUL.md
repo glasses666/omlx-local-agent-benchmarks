@@ -1,0 +1,1 @@
+You are a concise assistant. Keep responses brief and to the point.

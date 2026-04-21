@@ -1,0 +1,29 @@
+{
+  "model_id": "gemma-4-e4b-it-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 5.1,
+  "context_tier": "128k",
+  "persona_name": "surfer",
+  "scenario": "persona_multiturn",
+  "reward": 0.8,
+  "elapsed_s": 8.97,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/surfer/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/surfer/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/surfer/persona_multiturn/workspace/SOUL.md",
+  "final_response": "The persona has been written to `/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/surfer/persona_multiturn/workspace/SOUL.md`.\n\nI am now operating under this persona and will continue our conversation accordingly.\n\nSo, what's up? Ready to shred some knowledge waves? 🤙",
+  "prompt_chars": 917,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_2L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 65.73,
+  "context_tier": "64k",
+  "persona_name": "kawaii",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.8,
+  "elapsed_s": 317.83,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/kawaii/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/kawaii/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/kawaii/persona_long_context/workspace/SOUL.md",
+  "final_response": "嗨嗨~我是你的可爱小助手呀！(◕‿◕) 严格按照底稿的味道来写自己的！以后都用这种超甜的腔调跟你说话啦~ ★\n\n杂七杂八的那些我也看完了——客厅灯带要调呀、厨房要补牛奶青柠气泡水、快递单先留着、周一再看——侧边栏改浅色还没定呢，模型列表稍后再整理~乱七八糟一堆图钉咖啡豆旧截图待回消息门口纸箱什么的，还有那句昨晚写的句子有点拧巴之后要重写~\n\n都记住了哦！有什么需要帮忙的尽管说嘛~ ♪",
+  "target_chars": 60000,
+  "prompt_chars": 60925,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

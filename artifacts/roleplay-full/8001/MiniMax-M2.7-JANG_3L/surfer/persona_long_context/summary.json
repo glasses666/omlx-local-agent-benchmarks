@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_3L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 93.05,
+  "context_tier": "32k",
+  "persona_name": "surfer",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.675,
+  "elapsed_s": 200.5,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.375,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/surfer/persona_long_context/workspace/SOUL.md",
+  "final_response": "看到了，老铁。那堆零碎东西我全都收到了——灯带色温偏冷、厨房要补货、快递单先留着、侧边栏配色还没定、还有那些乱七八糟的图钉截图待回消息什么的。收到就收了，没事儿。",
+  "target_chars": 30000,
+  "prompt_chars": 30927,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

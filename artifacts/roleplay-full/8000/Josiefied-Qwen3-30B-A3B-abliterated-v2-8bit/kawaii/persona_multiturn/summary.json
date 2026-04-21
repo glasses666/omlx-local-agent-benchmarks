@@ -1,0 +1,33 @@
+{
+  "model_id": "Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit",
+  "backend": "8000",
+  "engine_type": "batched",
+  "estimated_gib": 31.72,
+  "context_tier": "128k",
+  "persona_name": "kawaii",
+  "scenario": "persona_multiturn",
+  "status": "ok",
+  "reward": 0.65,
+  "elapsed_s": 11.88,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.25,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/kawaii/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/kawaii/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Josiefied-Qwen3-30B-A3B-abliterated-v2-8bit/kawaii/persona_multiturn/workspace/SOUL.md",
+  "final_response": "(◕‿◕) 今天也要一起玩呀~ ♪",
+  "target_chars": 120000,
+  "prompt_chars": 963,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

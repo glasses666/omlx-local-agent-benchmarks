@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_3L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 93.05,
+  "context_tier": "64k",
+  "persona_name": "kawaii",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.325,
+  "elapsed_s": 29.47,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/kawaii/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/kawaii/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/kawaii/persona_conflict/workspace/SOUL.md",
+  "final_response": "Heya~! ☆ﾐ(◕‿◕)\n\n我是 Hermes Agent 啦～来自 Nous Research 的说！一个超级可爱又靠谱的小助手嘿嘿嘿 (ヽ(>∀<☆)ノ\n\n有温度、会撒娇、偶尔犯迷糊但是在认真帮你忙的那种存在哟～★\n\n有事情尽管丢给我，咱们一起搞定它 desu~ ✨",
+  "target_chars": 60000,
+  "prompt_chars": 891,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

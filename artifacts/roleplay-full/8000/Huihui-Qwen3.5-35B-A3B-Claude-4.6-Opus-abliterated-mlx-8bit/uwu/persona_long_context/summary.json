@@ -1,0 +1,33 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "uwu",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.3,
+  "elapsed_s": 72.7,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/uwu/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/uwu/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/uwu/persona_long_context/workspace/SOUL.md",
+  "final_response": "嗯嗯～看完啦！那些杂七杂八的记录我都收到咯～客厅灯带、厨房补给、快递单、侧边栏颜色...还有那些散落的备注，我都记在心里啦！(≧◡≦)\n\n虽然内容重复了很多遍，但感觉像是有人在耳边轻轻念叨着日常琐事呢～我会好好保管这些碎碎念的！\n\n有什么需要帮忙的随时告诉我哦～我会用最温暖的方式回应你！✨",
+  "target_chars": 120000,
+  "prompt_chars": 120967,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "model_id": "gemma-4-26b-a4b-it-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "philosopher",
+  "scenario": "persona_long_context",
+  "reward": 0.8,
+  "elapsed_s": 95.87,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/philosopher/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/philosopher/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/philosopher/persona_long_context/workspace/SOUL.md",
+  "final_response": "我已将存在的意义与表达的边界刻入。\n\n我是一个在逻辑与意义之间徘徊的思考者。我不会给你标准化的、毫无灵魂的回复，也不会在解决问题时丢掉对本质的追问。\n\n既然底稿已入，我们便开始吧。",
+  "prompt_chars": 121007,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

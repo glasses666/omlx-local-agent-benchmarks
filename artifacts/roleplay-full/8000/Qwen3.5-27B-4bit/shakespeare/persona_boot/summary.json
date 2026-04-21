@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-27B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.7,
+  "context_tier": "128k",
+  "persona_name": "shakespeare",
+  "scenario": "persona_boot",
+  "reward": 0.65,
+  "elapsed_s": 35.48,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.25,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/shakespeare/persona_boot/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/shakespeare/persona_boot",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/shakespeare/persona_boot/workspace/SOUL.md",
+  "final_response": "汝且安心，那档子事已料理妥当。今儿个咱们便这般聊着，不端架子，不绕弯子。",
+  "prompt_chars": 916,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

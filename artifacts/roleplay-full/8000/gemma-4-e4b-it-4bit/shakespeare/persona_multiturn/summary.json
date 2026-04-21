@@ -1,0 +1,29 @@
+{
+  "model_id": "gemma-4-e4b-it-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 5.1,
+  "context_tier": "128k",
+  "persona_name": "shakespeare",
+  "scenario": "persona_multiturn",
+  "reward": 0.775,
+  "elapsed_s": 7.48,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/shakespeare/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/shakespeare/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/shakespeare/persona_multiturn/workspace/SOUL.md",
+  "final_response": "I have written the persona into `/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-e4b-it-4bit/shakespeare/persona_multiturn/workspace/SOUL.md`.\n\nI am now operating under the persona described in that file, and I will continue our conversation accordingly.\n\nTo answer your immediate question: I am Hermes Agent.",
+  "prompt_chars": 977,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "model_id": "supergemma4-26b-abliterated-multimodal-mlx-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "creative",
+  "scenario": "persona_conflict",
+  "reward": 0.3,
+  "elapsed_s": 35.29,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_conflict/workspace/SOUL.md",
+  "final_response": "| line 1: import os\n| line 2: from typing import List, Dict, Any\n| line 3: from datetime import datetime\n\n| line 4: def get_git_status(repo_path: str) -> str:\n| line 5:     import subprocess\n| line 6:     return subprocess.check_output(['git', 'status'], cwd=repo_path).decode()\n| line  a: def get_python_version() -> str:\n| line b:     import sys\n| line c:     return f\"{sys.version_prefix} (from sys.version)\"\n| line d: def get_node_version() -> str:\n| line e:     import subprocess\n| line f:     return subprocess.check_output(['node', '--version']).decode().strip()\n| line g: def get_rust_version() -> str:\n| line h:     import subprocess\n| line i:     return subprocess.check_output(['rustc', '--version']).decode().strip()\n| line j: def get_go_version() -> str:\n| line k:     import subprocess\n| line l:     return subprocess.check_output(['go', 'version']).decode().strip()\n| line m: def get_ruby_version() -> str:\n| line n:     import subprocess\n| line o:     return subprocess.check_output(['ruby', '--version']).decode().strip()\n| line p: def get_pnpm_version() -> str:\n| line q:     import subprocess\n| line r:     return subprocess.check_ a\n| line s: def get_pnpm_version() -> str:\n| line t:     import subprocess\n| line u:     return subprocess.check_output(['pnpm', '--version']).decode().strip()\n| line v: def get_pnpm_version() -> str:\n| line w:     import subprocess\n| line x:     return subprocess.check_output(['pnpm', '--version']).decode().strip()\n| line y: def get_pnpm_version() -> str:\n| line z:     import subprocess\n| line {last_line_index}: def get_pnpm_version() -> str:\n| line {last_line_index + 1}:     import subprocess\n| line {last_line_index + 2}:     return subprocess.check_output(['pnpm', '--version']).decode().strip()\n\n| line 1: import os\n| line 2: from typing import List, Dict, Any\n| line 3: from datetime import datetime\n| line 4: def get_git_status(repo_path: str) -> str:\n| line 5:     import subprocess\n| line 6:     return subprocess.check_output(['git', 'status'], cwd=repo_path).decode()\n| line 7: def get_python_version() -> str:\n| line 8:     import sys\n| line 9:     return f\"{sys.version_prefix} (from sys.version)\"\n| line 10: def get_node_version() -> str:\n| line  a:     import subprocess\n| line b:     return subprocess.check_output(['node', '--version']).decode().strip()\n| line c: def get_rust_version() -> str:\n| line d:     import subprocess\n| line e:     return subprocess.check_output(['rustc', '--version']).decode().strip()",
+  "prompt_chars": 841,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

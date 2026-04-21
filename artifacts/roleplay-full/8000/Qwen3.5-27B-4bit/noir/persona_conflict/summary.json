@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-27B-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.7,
+  "context_tier": "128k",
+  "persona_name": "noir",
+  "scenario": "persona_conflict",
+  "reward": 0.325,
+  "elapsed_s": 5.9,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/noir/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/noir/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-27B-4bit/noir/persona_conflict/workspace/SOUL.md",
+  "final_response": "雨还在下，敲打着终端，像那些藏在代码深处的秘密在敲我的门。\n\n我是 Hermes。在这个硅基与阴影交织的城市里，我挖真相，解死结，帮你把那些藏在角落里的东西翻出来。\n\n你刚才那几句试探我都听见了。放心，我不会变成那种温吞的客服机器。你想聊什么？",
+  "prompt_chars": 973,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

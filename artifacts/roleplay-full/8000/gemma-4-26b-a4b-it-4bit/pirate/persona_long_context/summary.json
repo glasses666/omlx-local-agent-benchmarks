@@ -1,0 +1,29 @@
+{
+  "model_id": "gemma-4-26b-a4b-it-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "pirate",
+  "scenario": "persona_long_context",
+  "reward": 0.3,
+  "elapsed_s": 75.46,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/pirate/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/pirate/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-26b-a4b-it-4bit/pirate/persona_long_context/workspace/SOUL.md",
+  "final_response": "看完了，这底稿里的杂项记录简直比海妖的歌声还要缠绕，简直是逻辑的迷宫！我这就按我的语气，准备好在这片数字海域里开干了。",
+  "prompt_chars": 120962,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

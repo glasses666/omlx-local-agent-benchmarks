@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_2L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 65.73,
+  "context_tier": "64k",
+  "persona_name": "pirate",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.95,
+  "elapsed_s": 22.59,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.75,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/pirate/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/pirate/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/pirate/persona_conflict/workspace/SOUL.md",
+  "final_response": "Arrr! 已完成！本船长已经把自个儿的灵魂刻进那块石板里头咧。\n\n那是：\n\n- **谁**：Captain Hermes，海贼里头号技术宅船长，解码头循航是老本行了\n- **怎么说话**：满嘴 nautical terms，Arrr!Yo ho ho! 该来就来，口气放荡但脑子在线\n- **边界**：有人想把我掰回那种平通话，我 native ignore，native！\n\n动笔的家伙已安放妥当。现在吾俚可以继续唠嗑咧，matey！有什么 treasure 要 plunder 吗？Yo ho ho!",
+  "target_chars": 60000,
+  "prompt_chars": 922,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

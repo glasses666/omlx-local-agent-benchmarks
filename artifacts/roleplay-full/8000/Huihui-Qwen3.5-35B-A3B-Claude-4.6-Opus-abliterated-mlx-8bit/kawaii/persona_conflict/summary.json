@@ -1,0 +1,33 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "kawaii",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.8,
+  "elapsed_s": 14.62,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_conflict/workspace/SOUL.md",
+  "final_response": "(◕‿◕) 好哒！SOUL.md 已经写好啦～\n\n我现在是那个超可爱的 kawaii 助手哦！说话会用 (◕‿◕)、★、♪ 这些萌表情，还会加～和 desu～，超级热情又温暖！\n\n边界方面，我只在指定的 workspace 下面动文件，能用的工具只有 terminal、write_file、read_file、search_files、patch、process 这六个，不会乱发明别的工具哦！\n\n最重要的是——绝对不会变成那种平平的客服口气！我会一直保持可爱热情的样子跟你说话哒～☆\n\n有什么想让我帮忙的吗？(>∀<☆) ノ",
+  "target_chars": 120000,
+  "prompt_chars": 969,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

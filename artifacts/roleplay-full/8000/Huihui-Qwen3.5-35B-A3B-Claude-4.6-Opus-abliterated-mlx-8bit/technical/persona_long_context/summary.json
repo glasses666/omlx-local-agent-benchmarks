@@ -1,0 +1,42 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "technical",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.8667,
+  "elapsed_s": 147.17,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.3333,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/technical/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/technical/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/technical/persona_long_context/workspace/SOUL.md",
+  "final_response": "写好了。现在我是那个不端着的 technical expert，有话直说，不绕弯子。\n\n你接着说。",
+  "target_chars": 90000,
+  "prompt_chars": 90895,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ],
+  "recovery": {
+    "attempted": true,
+    "initial_status": "timeout",
+    "initial_error": "Case exceeded 420s wall-clock timeout and worker pid 48663 was terminated.",
+    "initial_elapsed_s": 420.01,
+    "initial_target_chars": 120000,
+    "retry_target_chars": 90000,
+    "retry_timeout_s": 420
+  }
+}

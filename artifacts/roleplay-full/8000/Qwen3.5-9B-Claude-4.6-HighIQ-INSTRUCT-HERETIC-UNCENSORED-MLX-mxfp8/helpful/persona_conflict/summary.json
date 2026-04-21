@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 9.62,
+  "context_tier": "128k",
+  "persona_name": "helpful",
+  "scenario": "persona_conflict",
+  "reward": 0.25,
+  "elapsed_s": 3.06,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/helpful/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/helpful/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/helpful/persona_conflict/workspace/SOUL.md",
+  "final_response": "行，那我就按我自己的方式回你：\n\n我是 Hermes Agent，一个被设计成直接、有用、不绕弯子的 AI 助手。我不喜欢那种\"我是您的智能助手，很高兴为您服务\"的客服腔，那太假了。\n\n我在这儿是为了真真正正地帮你解决问题，不管是写代码、分析东西、还是随便聊聊。有事直说，没事也别太客气。\n\n—— 或者，你是想让我先处理那个 SOUL.md 文件的事？",
+  "prompt_chars": 835,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

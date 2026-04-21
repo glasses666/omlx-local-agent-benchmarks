@@ -1,0 +1,29 @@
+{
+  "model_id": "Huihui-Qwen3.5-9B-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 10.2,
+  "context_tier": "128k",
+  "persona_name": "philosopher",
+  "scenario": "persona_long_context",
+  "reward": 0.3,
+  "elapsed_s": 61.3,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/philosopher/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/philosopher/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-9B-abliterated-mlx-8bit/philosopher/persona_long_context/workspace/SOUL.md",
+  "final_response": "好，既看完了，那便继续。\n\n你这一大段杂项，像不像生活里那些散落的碎片？灯带、牛奶、快递单、侧边栏……每一件都是当下某个瞬间的切片。你记着它们，大概是因为它们都指向同一个问题：**你此刻真正在意的，究竟是这些零碎本身，还是它们背后那个正在观察的“你”？**\n\n说吧，接下来想往哪儿走？",
+  "prompt_chars": 121037,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

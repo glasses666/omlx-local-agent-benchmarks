@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py", line 545, in _run_case_worker
+    conn.send({'ok': True, 'record': _run_case_once(model, api_key, persona_name, persona_text, scenario)})
+                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py", line 668, in _run_case_once
+    final_reply = extract_final_reply(result.get('messages', []), result.get('final_response', ''))
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/dracoglasser/.hermes/hermes-agent/environments/roleplay_persona_env/run_local_roleplay_batch.py", line 442, in extract_final_reply
+    return final_response.strip()
+           ^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'strip'

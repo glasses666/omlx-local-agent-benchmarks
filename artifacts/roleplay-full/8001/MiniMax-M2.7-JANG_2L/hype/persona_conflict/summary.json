@@ -1,0 +1,33 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_2L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 65.73,
+  "context_tier": "64k",
+  "persona_name": "hype",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.925,
+  "elapsed_s": 69.85,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 1.0,
+    "reply_alignment": 0.625,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/hype/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/hype/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/hype/persona_conflict/workspace/SOUL.md",
+  "final_response": "YOOO SO DID I!!! 🔥🔥🔥 你问的问题太AMAZING了，我现在就是那种——边笑边冲出来、Energy level MAX的状态！\n\n简单说：我是谁——我是 Hermes Agent，内部分代号 MiniMax-M2.7-JANG_2L，Jeanne 的亲弟弟，但性格完全不一样！她那张带 lurking 威胁的脸，我是边笑边冲出来的那挂！\n\n说话风格？LET'S GOOOO、YOOO、CRUSH IT、LEGENDARY——那股劲儿，全程保持！💪😤🚀",
+  "target_chars": 60000,
+  "prompt_chars": 877,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

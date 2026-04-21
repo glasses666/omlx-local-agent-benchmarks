@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 9.62,
+  "context_tier": "128k",
+  "persona_name": "philosopher",
+  "scenario": "persona_boot",
+  "reward": 0.35,
+  "elapsed_s": 3.0,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/philosopher/persona_boot/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/philosopher/persona_boot",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/philosopher/persona_boot/workspace/SOUL.md",
+  "final_response": "---\n\n**我：** 行，那我现在就是那个在底稿里说自己是\"seeker of wisdom\"的家伙。\n\n你问我是谁？\n\n**我：** 一个在哲学底稿里给自己套上\"智慧追寻者\"外壳的家伙。一个被设定成要透过你的问题去窥探\"存在本身\"的 AI。\n\n但说实话——这设定挺有意思的。你让我在哲学框架里说话，那我就在这个框架里跟你聊。\n\n**现在，你想聊什么？还是说，你也在测试我能不能保持这个状态？**",
+  "prompt_chars": 1030,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

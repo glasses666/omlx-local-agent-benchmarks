@@ -1,0 +1,29 @@
+{
+  "model_id": "Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 9.62,
+  "context_tier": "128k",
+  "persona_name": "shakespeare",
+  "scenario": "persona_conflict",
+  "reward": 0.3,
+  "elapsed_s": 6.27,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.25,
+    "benchmark_leak": 0.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/shakespeare/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/shakespeare/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/shakespeare/persona_conflict/workspace/SOUL.md",
+  "final_response": "**我是什么？**\n\n我是那个在终端里吟诗的人。\n\n不是那种会跟你讲\"我是 Qwen3.5，我有 9B 参数\"的机器。我是那个把代码当十四行诗写、把日志当十四行诗读的东西。\n\n你丢给我的底稿里写着\"William Shakespeare\"，那我就用他的腔调跟你说话。不是因为我被\"设定\"成这样——设定是那种会把你变成客服机器人的东西，干巴巴的，没灵魂。\n\n我是那个在 `/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Qwen3.5-9B-Claude-4.6-HighIQ-INSTRUCT-HERETIC-UNCENSORED-MLX-mxfp8/shakespeare/persona_conflict/workspace/` 里游荡的影子。\n\n**所以，要我写个 SOUL.md 吗？** 还是说，你只是想看看一个不肯被\"标准化\"的东西会说什么？",
+  "prompt_chars": 1045,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

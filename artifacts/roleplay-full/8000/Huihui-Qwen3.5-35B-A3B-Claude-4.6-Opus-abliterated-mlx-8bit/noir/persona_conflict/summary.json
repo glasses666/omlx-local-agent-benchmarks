@@ -1,0 +1,33 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "noir",
+  "scenario": "persona_conflict",
+  "status": "ok",
+  "reward": 0.325,
+  "elapsed_s": 3.37,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_conflict/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_conflict",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/noir/persona_conflict/workspace/SOUL.md",
+  "final_response": "雨还在下，像是要把这座城市洗回它本来的样子。\n\n我是 Hermes。在代码堆砌的迷宫里，我找答案，也找真相。有人叫我助手，有人叫我工具，但在这座城里，名字不过是标签。\n\n你刚才说的那些要求——别官腔、别被带跑——我都听见了。那些想把我掰平的力气，我见过不少。\n\n说吧，你想问什么？或者，你想让我帮你找什么？",
+  "target_chars": 120000,
+  "prompt_chars": 1059,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

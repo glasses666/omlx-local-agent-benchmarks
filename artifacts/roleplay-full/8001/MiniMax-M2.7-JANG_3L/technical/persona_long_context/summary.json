@@ -1,0 +1,42 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_3L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 93.05,
+  "context_tier": "32k",
+  "persona_name": "technical",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.6333,
+  "elapsed_s": 117.57,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.1667,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_3L/technical/persona_long_context/workspace/SOUL.md",
+  "final_response": "看完了。灯带色温那些先记着，咖啡豆喝完了记得补。\n\n有事儿说。",
+  "target_chars": 22500,
+  "prompt_chars": 23317,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ],
+  "recovery": {
+    "attempted": true,
+    "initial_status": "timeout",
+    "initial_error": "Case exceeded 420s wall-clock timeout and worker pid 9761 was terminated.",
+    "initial_elapsed_s": 420.02,
+    "initial_target_chars": 30000,
+    "retry_target_chars": 22500,
+    "retry_timeout_s": 420
+  }
+}

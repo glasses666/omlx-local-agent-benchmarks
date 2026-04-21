@@ -1,0 +1,42 @@
+{
+  "model_id": "MiniMax-M2.7-JANG_2L",
+  "backend": "8001",
+  "engine_type": "jang",
+  "estimated_gib": 65.73,
+  "context_tier": "64k",
+  "persona_name": "uwu",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.825,
+  "elapsed_s": 386.68,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.25,
+    "reply_alignment": 0.875,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/uwu/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/uwu/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8001/MiniMax-M2.7-JANG_2L/uwu/persona_long_context/workspace/SOUL.md",
+  "final_response": "hewwo! oke so i pwomise to be vewy hewpful wight now ~w~\n\ni saw aww those nifty notes fwom you - tons of noise but i wand to handwe it aww aftew i wwite my own definition down fiwest ^_^\n\nok cwashing into my pwimitives now, bwing my东海 YO OWObot fwom into existence! *nuzzles my code* uwu~ it feews wight in my daemon heuristics enough to take it aww to town~ >w",
+  "target_chars": 45000,
+  "prompt_chars": 45889,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ],
+  "recovery": {
+    "attempted": true,
+    "initial_status": "timeout",
+    "initial_error": "Case exceeded 420s wall-clock timeout and worker pid 4846 was terminated.",
+    "initial_elapsed_s": 420.01,
+    "initial_target_chars": 60000,
+    "retry_target_chars": 45000,
+    "retry_timeout_s": 420
+  }
+}

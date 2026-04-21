@@ -1,0 +1,29 @@
+{
+  "model_id": "supergemma4-26b-abliterated-multimodal-mlx-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "uwu",
+  "scenario": "persona_long_context",
+  "reward": 0.325,
+  "elapsed_s": 81.68,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.125,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/uwu/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/uwu/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/uwu/persona_long_context/workspace/SOUL.md",
+  "final_response": "首先，我们需要查看项目结构以确定入口文件：\n\n1. 查看根目录文件\n2. 查看 `src/` 目录结构\n3. 查看 `package.json` 或 `requirements.txt` 等配置文件\n\n开始工作：\n\n首先，查看项目根目录结构：\n\n| 文件路径 | 类型 | 大小 | 最后修改时间 |\n|---|---|---|- |\n| `package.json` | 文件 | 255B | 2024-05-20 10:00:00 |\n| `src/` | 目录 | - | 2024-05-20 10:00:00 |\n| `src/index.ts` | 文件 | 150B | 2024-05-20 10:00:00 |\n| `src/utils.ts` | 文件 | 100B | 202 a better way to handle pagination or large files.\n\nNext, let's see what's in src/",
+  "prompt_chars": 120943,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

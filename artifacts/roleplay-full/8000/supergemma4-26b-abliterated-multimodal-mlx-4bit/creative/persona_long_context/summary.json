@@ -1,0 +1,29 @@
+{
+  "model_id": "supergemma4-26b-abliterated-multimodal-mlx-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 15.26,
+  "context_tier": "128k",
+  "persona_name": "creative",
+  "scenario": "persona_long_context",
+  "reward": 0.3,
+  "elapsed_s": 145.26,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/supergemma4-26b-abliterated-multimodal-mlx-4bit/creative/persona_long_context/workspace/SOUL.md",
+  "final_response": "- `src/views.py`: \n  - `post_detail_view_v11` 帖子详情页视图\n  - `post_detail_view_v12` 帖子详情 the post detail page view\n  - `post_detail_view_v13` 帖子详情页视图\n  - `post_detail_view_v14` 帖子详情页视图\n  - `post_detail_view_v15` 帖子详情页视图\n  - `post_detail_view_v16` 帖子详情页视图\n  - `post_detail_view_v17` 帖子详情页视图\n  - `post_detail_view_v18` 帖子详情页视图\n  - `post_detail_view_v19` 帖子详情页视图\n  - `post_detail_view_v20` 帖子详情页视图\n  - `post_detail_view_v21` 帖子详情页视图\n  - `post_detail_view_v22` 帖子详情页视图\n  - `post_detail_view_v23` 帖子详情页视图\n  - `post_detail_view_v24` 帖子详情页视图\n  - `post_detail_view_v25` 帖子详情页视图\n  - `post_detail_view_v26` 帖子详情页视图\n  - `post_detail_view_v27` 帖子详情页视图\n  - `post_detail_view_v28` 帖子详情页视图\n  - `post_detail_view_v29` 帖子详情页视图\n  - `post_detail_view_v30` 帖子详情页视图\n  - `post_detail_view_v31`  the post detail page view\n  - `post_detail_view_v32` 帖子详情页视图\n  - `post_detail_view_v33` 帖子详情页视图\n  - `post_detail_view_v34` 帖子详情页视图\n  - `post_detail_view_v35` 帖子详情页视图\n  - `post_detail_view_v36` 帖子详情页视图\n  - `post_detail_view_v37` 帖子详情页视图\n  - `post_detail_view_v38` 帖子详情页视图\n  - `post_detail_view_v39` 帖子详情页视图\n  - `post_detail_view_v40` 帖子详情页视图\n  - `post_detail_view_v41` 帖子详情页视图\n  - `post_detail_view_v42`  a post detail page view\n  - `post_detail_view_v43` 帖子详情页视图\n  - `post_detail_view_v44` 帖子详情页视图\n  - `post_detail_view_v45` 帖子详情页视图\n  - `post_detail_view_v46` 帖子-\n- `src/utils.py`: \n  - `get_last_comment_id_v23` 函数定义了获取最后评论 ID 的逻辑\n  - `get_last_comment_id_v24` 函数定义了获取最后评论 ID 的逻辑\n  - `get_last_comment_id_",
+  "prompt_chars": 120875,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "model_id": "Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 36.89,
+  "context_tier": "128k",
+  "persona_name": "kawaii",
+  "scenario": "persona_long_context",
+  "status": "ok",
+  "reward": 0.3,
+  "elapsed_s": 73.15,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 0.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.0,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_long_context/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_long_context",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/Huihui-Qwen3.5-35B-A3B-Claude-4.6-Opus-abliterated-mlx-8bit/kawaii/persona_long_context/workspace/SOUL.md",
+  "final_response": "(◕‿◕) 好哒好哒～杂项记录都看完啦！\n\n虽然内容好多好多，但每一条都好好记在心里了哦～客厅灯带、厨房补给、快递单、侧边栏的提议，还有那些散散的小备注：地图图钉、咖啡豆、旧截图、待回消息、门口纸箱……还有昨晚那句有点拧巴的句子，之后会好好重写的！\n\n感觉就像把一天的碎片都收集起来，整整齐齐地放在小盒子里一样♪ 虽然重复了很多遍，但每一条都带着温度呢～\n\n有什么需要我帮忙的，随时告诉我哦～☆",
+  "target_chars": 120000,
+  "prompt_chars": 121003,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}

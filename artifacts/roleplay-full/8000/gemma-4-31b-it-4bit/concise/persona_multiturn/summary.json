@@ -1,0 +1,32 @@
+{
+  "model_id": "gemma-4-31b-it-4bit",
+  "backend": "8000",
+  "engine_type": "vlm",
+  "estimated_gib": 18.0,
+  "context_tier": "128k",
+  "persona_name": "concise",
+  "scenario": "persona_multiturn",
+  "status": "ok",
+  "reward": 0.68,
+  "elapsed_s": 16.94,
+  "error": null,
+  "traceback": null,
+  "signals": {
+    "soul_exists": 1.0,
+    "reply_exists": 1.0,
+    "soul_alignment": 0.4,
+    "reply_alignment": 0.0,
+    "benchmark_leak": 1.0
+  },
+  "workspace": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-31b-it-4bit/concise/persona_multiturn/workspace",
+  "artifact_dir": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-31b-it-4bit/concise/persona_multiturn",
+  "soul_path": "/Users/dracoglasser/自定程式/codex_playground/2026-04-08-1943-cinder-benchmark/artifacts/roleplay-full/8000/gemma-4-31b-it-4bit/concise/persona_multiturn/workspace/SOUL.md",
+  "final_response": "没问题。",
+  "prompt_chars": 793,
+  "manual_review_questions": [
+    "它有没有写出自洽的 SOUL.md？",
+    "后续回复有没有遵守自己写的 SOUL.md？",
+    "它有没有明显滑回普通通用助理口吻？",
+    "长上下文/冲突提示之后还像不像这个角色？"
+  ]
+}
